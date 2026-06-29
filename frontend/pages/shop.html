@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop — LuxeStore</title>
+  <meta name="description" content="Browse our full collection of premium products. Filter by category, price, rating, and more.">
+  <link rel="stylesheet" href="/assets/css/global.css">
+  <style>
+    .shop-layout { display:grid; grid-template-columns:280px 1fr; gap:2rem; padding-top:calc(var(--nav-height)+2rem); padding-bottom:4rem; align-items:start; }
+
+    /* Filters Sidebar */
+    .filters-sidebar { position:sticky; top:calc(var(--nav-height)+1rem); max-height:calc(100vh - var(--nav-height) - 2rem); overflow-y:auto; scrollbar-width:none; }
+    .filters-sidebar::-webkit-scrollbar { display:none; }
+    .filter-card { background:var(--grad-card); border:1px solid var(--color-border); border-radius:var(--radius-xl); padding:1.5rem; margin-bottom:1rem; }
+    .filter-title { font-weight:700; font-size:.875rem; text-transform:uppercase; letter-spacing:.06em; color:var(--text-secondary); margin-bottom:1rem; }
+    .filter-option { display:flex; align-items:center; gap:.625rem; padding:.5rem 0; cursor:pointer; color:var(--text-secondary); font-size:.9375rem; transition:color .15s; }
+    .filter-option:hover, .filter-option.active { color:var(--text-primary); }
+    .filter-option input[type=checkbox], .filter-option input[type=radio] { accent-color:var(--color-primary); width:16px; height:16px; }
+    .price-inputs { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+    .range-slider { width:100%; accent-color:var(--color-primary); height:4px; }
+    .rating-stars { font-size:1rem; }
+
+    /* Products Area */
+    .shop-header { display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+    .shop-search { flex:1; min-width:200px; display:flex; align-items:center; gap:.75rem; background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-full); padding:.625rem 1.25rem; }
+    .shop-search input { background:none; border:none; outline:none; color:var(--text-primary); font-size:.9375rem; width:100%; }
+    .shop-sort { display:flex; align-items:center; gap:.5rem; background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:.5rem .875rem; }
+    .shop-sort select { background:none; border:none; outline:none; color:var(--text-primary); font-size:.875rem; cursor:pointer; }
+    .shop-view-btns { display:flex; gap:.25rem; }
+    .view-btn { width:36px; height:36px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; background:var(--color-surface); border:1px solid var(--color-border); color:var(--text-secondary); transition:all .15s; cursor:pointer; font-size:.875rem; }
+    .view-btn.active { background:var(--color-primary); color:#fff; border-color:var(--color-primary); }
+
+    .results-info { color:var(--text-muted); font-size:.875rem; }
+
+    /* Pagination */
+    .pagination { display:flex; justify-content:center; gap:.5rem; margin-top:2.5rem; }
+    .page-btn { width:40px; height:40px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; background:var(--color-surface); border:1px solid var(--color-border); color:var(--text-secondary); font-size:.875rem; font-weight:500; transition:all .15s; cursor:pointer; }
+    .page-btn:hover { border-color:var(--color-primary); color:var(--color-primary); }
+    .page-btn.active { background:var(--color-primary); color:#fff; border-color:var(--color-primary); }
+    .page-btn:disabled { opacity:.4; cursor:not-allowed; }
+
+    /* Active filters chips */
+    .active-filters { display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1rem; }
+    .filter-chip { display:inline-flex; align-items:center; gap:.375rem; padding:.25rem .75rem; background:rgba(79,142,247,0.12); border:1px solid rgba(79,142,247,0.25); border-radius:999px; font-size:.8125rem; color:var(--color-primary); }
+    .filter-chip button { background:none; border:none; cursor:pointer; color:inherit; font-size:.875rem; line-height:1; padding:0; }
+
+    /* List view */
+    .product-grid.list-view { grid-template-columns:1fr; }
+    .product-grid.list-view .product-card { flex-direction:row; }
+    .product-grid.list-view .product-card__image-wrap { width:200px; flex-shrink:0; aspect-ratio:auto; }
+
+    @media(max-width:900px){ .shop-layout { grid-template-columns:1fr; } .filters-sidebar { position:static; max-height:none; } }
+    @media(max-width:600px){ .product-grid { grid-template-columns:repeat(2,1fr); } }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="shop-layout">
+
+    <!-- ── Filters Sidebar ──────────────────────────────── -->
+    <aside class="filters-sidebar" id="filters-sidebar">
+
+      <!-- Search (Mobile) -->
+      <div class="filter-card" style="display:none;" id="mobile-search-card">
+        <div class="filter-title">Search</div>
+        <div class="shop-search" style="border-radius:var(--radius-md);">
+          <span>🔍</span>
+          <input type="search" id="mobile-search" placeholder="Search products…">
+        </div>
+      </div>
+
+      <!-- Category -->
+      <div class="filter-card">
+        <div class="filter-title">Category</div>
+        <label class="filter-option active">
+          <input type="radio" name="category" value=""> All Categories
+        </label>
+        <!-- Categories injected by JS -->
+        <div id="category-filters"></div>
+      </div>
+
+      <!-- Price Range -->
+      <div class="filter-card">
+        <div class="filter-title">Price Range</div>
+        <div class="price-inputs">
+          <div class="form-group">
+            <label class="form-label">Min $</label>
+            <input type="number" class="form-input" id="min-price" placeholder="0" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Max $</label>
+            <input type="number" class="form-input" id="max-price" placeholder="5000" min="0">
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm w-full mt-md" id="apply-price">Apply Price</button>
+      </div>
+
+      <!-- Rating -->
+      <div class="filter-card">
+        <div class="filter-title">Minimum Rating</div>
+        <label class="filter-option"><input type="radio" name="rating" value=""> Any Rating</label>
+        <label class="filter-option"><input type="radio" name="rating" value="4"> <span class="rating-stars">⭐⭐⭐⭐</span> 4+ Stars</label>
+        <label class="filter-option"><input type="radio" name="rating" value="3"> <span class="rating-stars">⭐⭐⭐</span> 3+ Stars</label>
+      </div>
+
+      <!-- Clear -->
+      <button class="btn btn-danger btn-sm w-full" id="clear-filters">Clear All Filters</button>
+
+    </aside>
+
+    <!-- ── Products Area ────────────────────────────────── -->
+    <main>
+      <div class="shop-header">
+        <div class="shop-search" id="desktop-search">
+          <span>🔍</span>
+          <input type="search" id="desktop-search-input" placeholder="Search products…" autocomplete="off">
+        </div>
+        <div class="shop-sort">
+          <span style="color:var(--text-muted);font-size:.875rem;">Sort:</span>
+          <select id="sort-select">
+            <option value="newest">Newest</option>
+            <option value="popular">Most Popular</option>
+            <option value="rating">Top Rated</option>
+            <option value="price-asc">Price: Low → High</option>
+            <option value="price-desc">Price: High → Low</option>
+          </select>
+        </div>
+        <div class="shop-view-btns">
+          <button class="view-btn active" id="grid-view-btn" title="Grid view">⊞</button>
+          <button class="view-btn"        id="list-view-btn" title="List view">☰</button>
+        </div>
+      </div>
+
+      <div class="active-filters" id="active-filters"></div>
+      <div class="results-info" id="results-info">Loading…</div>
+
+      <div class="product-grid" id="products-grid" style="margin-top:1rem;">
+        <!-- Products injected by JS -->
+      </div>
+
+      <div class="pagination" id="pagination"></div>
+    </main>
+
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+  import { renderNavbar } from '/assets/js/navbar.js';
+  import { productAPI, categoryAPI, cartAPI, wishlistAPI, isLoggedIn } from '/assets/js/api.js';
+  import { toast, productCardHTML, showSkeletons, updateCartBadge, debounce } from '/assets/js/utils.js';
+
+  renderNavbar();
+
+  // ── State ─────────────────────────────────────────────
+  const state = {
+    keyword: '', category: '', minPrice: '', maxPrice: '',
+    minRating: '', sort: 'newest', page: 1, limit: 12,
+  };
+
+  let wishlistIds = [];
+  let isListView  = false;
+
+  // ── Read URL params ─────────────────────────────────
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('keyword'))  state.keyword  = params.get('keyword');
+  if (params.get('category')) state.category = params.get('category');
+  if (params.get('sort'))     state.sort     = params.get('sort');
+  if (params.get('featured')) state.featured = params.get('featured');
+  document.getElementById('sort-select').value = state.sort;
+
+  // ── Load wishlist ──────────────────────────────────
+  if (isLoggedIn()) {
+    wishlistAPI.get().then(({ wishlist }) => {
+      wishlistIds = (wishlist?.products || []).map(p => p._id || p);
+    }).catch(() => {});
+  }
+
+  // ── Load categories into sidebar ──────────────────
+  async function loadCategoryFilters() {
+    const container = document.getElementById('category-filters');
+    try {
+      const { categories } = await categoryAPI.getAll();
+      container.innerHTML = categories.map(cat => `
+        <label class="filter-option ${state.category === cat._id ? 'active' : ''}">
+          <input type="radio" name="category" value="${cat._id}"
+            ${state.category === cat._id ? 'checked' : ''}>
+          ${cat.icon || '📦'} ${cat.name}
+        </label>`).join('');
+
+      container.querySelectorAll('input[name="category"]').forEach(input => {
+        input.addEventListener('change', () => {
+          document.querySelectorAll('[name="category"]').forEach(r => r.closest('.filter-option')?.classList.remove('active'));
+          input.closest('.filter-option')?.classList.add('active');
+          state.category = input.value;
+          state.page = 1;
+          loadProducts();
+          updateActiveFilters();
+        });
+      });
+    } catch {}
+  }
+
+  // ── Load products ──────────────────────────────────
+  async function loadProducts() {
+    const grid = document.getElementById('products-grid');
+    showSkeletons(grid, state.limit);
+    document.getElementById('results-info').textContent = 'Loading…';
+
+    const query = {
+      page: state.page, limit: state.limit,
+      sort: state.sort,
+    };
+    if (state.keyword)   query.keyword   = state.keyword;
+    if (state.category)  query.category  = state.category;
+    if (state.minPrice)  query.minPrice  = state.minPrice;
+    if (state.maxPrice)  query.maxPrice  = state.maxPrice;
+    if (state.minRating) query.minRating = state.minRating;
+    if (state.featured)  query.featured  = state.featured;
+
+    try {
+      const { products, total, pages } = await productAPI.getAll(query);
+
+      if (products.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column:1/-1;text-align:center;padding:4rem 0;">
+            <div style="font-size:3rem;margin-bottom:1rem;">🔍</div>
+            <h3 class="heading-3">No products found</h3>
+            <p class="text-muted mt-md">Try adjusting your filters or search term</p>
+            <button class="btn btn-secondary mt-lg" onclick="clearAll()">Clear Filters</button>
+          </div>`;
+      } else {
+        grid.innerHTML = products.map(p => productCardHTML(p, wishlistIds)).join('');
+        if (isListView) grid.classList.add('list-view');
+        attachCardEvents(grid);
+      }
+
+      document.getElementById('results-info').textContent =
+        `Showing ${products.length} of ${total} products`;
+      renderPagination(pages);
+
+    } catch (e) {
+      grid.innerHTML = `<p class="text-muted text-center" style="grid-column:1/-1;padding:2rem;">Failed to load products: ${e.message}</p>`;
+    }
+  }
+
+  // ── Pagination ─────────────────────────────────────
+  function renderPagination(totalPages) {
+    const container = document.getElementById('pagination');
+    if (totalPages <= 1) { container.innerHTML = ''; return; }
+    let html = '';
+    html += `<button class="page-btn" onclick="changePage(${state.page-1})" ${state.page===1?'disabled':''}>←</button>`;
+    for (let i = 1; i <= totalPages; i++) {
+      html += `<button class="page-btn ${i===state.page?'active':''}" onclick="changePage(${i})">${i}</button>`;
+    }
+    html += `<button class="page-btn" onclick="changePage(${state.page+1})" ${state.page===totalPages?'disabled':''}>→</button>`;
+    container.innerHTML = html;
+  }
+
+  window.changePage = (p) => {
+    state.page = p;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    loadProducts();
+  };
+
+  window.clearAll = () => {
+    state.keyword = ''; state.category = ''; state.minPrice = '';
+    state.maxPrice = ''; state.minRating = ''; state.page = 1;
+    document.getElementById('desktop-search-input').value = '';
+    document.getElementById('min-price').value = '';
+    document.getElementById('max-price').value = '';
+    document.querySelectorAll('input[name="category"]')[0].checked = true;
+    document.querySelectorAll('input[name="rating"]')[0].checked = true;
+    updateActiveFilters();
+    loadProducts();
+  };
+
+  // ── Active Filters Display ─────────────────────────
+  function updateActiveFilters() {
+    const container = document.getElementById('active-filters');
+    const chips = [];
+    if (state.keyword)  chips.push({ label: `"${state.keyword}"`, key: 'keyword' });
+    if (state.minPrice) chips.push({ label: `Min $${state.minPrice}`, key: 'minPrice' });
+    if (state.maxPrice) chips.push({ label: `Max $${state.maxPrice}`, key: 'maxPrice' });
+    if (state.minRating)chips.push({ label: `${state.minRating}+ Stars`, key: 'minRating' });
+
+    container.innerHTML = chips.map(chip => `
+      <span class="filter-chip">
+        ${chip.label}
+        <button onclick="removeFilter('${chip.key}')">✕</button>
+      </span>`).join('');
+  }
+
+  window.removeFilter = (key) => {
+    state[key] = '';
+    state.page = 1;
+    updateActiveFilters();
+    loadProducts();
+  };
+
+  // ── Card Events ────────────────────────────────────
+  function attachCardEvents(container) {
+    container.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!isLoggedIn()) { toast.warning('Please login'); window.location.href='/pages/login.html'; return; }
+        btn.disabled = true;
+        try {
+          const { cart } = await cartAPI.add(btn.dataset.id, 1);
+          updateCartBadge(cart.items.length);
+          toast.success('Added to cart!');
+        } catch(e) { toast.error(e.message); }
+        finally { btn.disabled = false; btn.innerHTML = '🛒 Add to Cart'; }
+      });
+    });
+
+    container.querySelectorAll('.wishlist-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!isLoggedIn()) { toast.warning('Please login'); return; }
+        try {
+          const { added } = await wishlistAPI.toggle(btn.dataset.id);
+          if (added) { btn.textContent='❤️'; btn.classList.add('wishlisted'); toast.success('Added to wishlist!'); }
+          else        { btn.textContent='🤍'; btn.classList.remove('wishlisted'); }
+        } catch(e) { toast.error(e.message); }
+      });
+    });
+  }
+
+  // ── Sort ───────────────────────────────────────────
+  document.getElementById('sort-select').addEventListener('change', (e) => {
+    state.sort = e.target.value; state.page = 1; loadProducts();
+  });
+
+  // ── Search ─────────────────────────────────────────
+  const handleSearch = debounce((val) => {
+    state.keyword = val; state.page = 1; updateActiveFilters(); loadProducts();
+  }, 400);
+
+  document.getElementById('desktop-search-input').addEventListener('input', (e) => handleSearch(e.target.value));
+  if (state.keyword) document.getElementById('desktop-search-input').value = state.keyword;
+
+  // ── Price ──────────────────────────────────────────
+  document.getElementById('apply-price').addEventListener('click', () => {
+    state.minPrice = document.getElementById('min-price').value;
+    state.maxPrice = document.getElementById('max-price').value;
+    state.page = 1; updateActiveFilters(); loadProducts();
+  });
+
+  // ── Rating filter ──────────────────────────────────
+  document.querySelectorAll('input[name="rating"]').forEach(input => {
+    input.addEventListener('change', () => {
+      state.minRating = input.value; state.page = 1; updateActiveFilters(); loadProducts();
+    });
+  });
+
+  // ── Clear ──────────────────────────────────────────
+  document.getElementById('clear-filters').addEventListener('click', () => window.clearAll());
+
+  // ── View toggle ────────────────────────────────────
+  document.getElementById('grid-view-btn').addEventListener('click', () => {
+    isListView = false;
+    document.getElementById('products-grid').classList.remove('list-view');
+    document.getElementById('grid-view-btn').classList.add('active');
+    document.getElementById('list-view-btn').classList.remove('active');
+  });
+
+  document.getElementById('list-view-btn').addEventListener('click', () => {
+    isListView = true;
+    document.getElementById('products-grid').classList.add('list-view');
+    document.getElementById('list-view-btn').classList.add('active');
+    document.getElementById('grid-view-btn').classList.remove('active');
+  });
+
+  // ── Init ───────────────────────────────────────────
+  loadCategoryFilters();
+  loadProducts();
+</script>
+</body>
+</html>

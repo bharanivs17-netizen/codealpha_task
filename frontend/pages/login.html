@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — LuxeStore</title>
+  <meta name="description" content="Log in to your LuxeStore account to view your dashboard, track orders, and checkout.">
+  <link rel="stylesheet" href="/assets/css/global.css">
+  <style>
+    .auth-page { padding: calc(var(--nav-height) + 3rem) 0 4rem; display: flex; align-items: center; justify-content: center; }
+    .auth-card {
+      width: 100%; max-width: 440px; padding: 2.5rem;
+      background: var(--grad-card); border: 1px solid var(--color-border);
+      border-radius: var(--radius-2xl); display: flex; flex-direction: column; gap: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="auth-page">
+  <div class="container" style="display: flex; justify-content: center;">
+    <div class="auth-card">
+      <div class="text-center">
+        <h1 class="heading-1">Welcome Back</h1>
+        <p class="text-muted mt-sm">Enter your credentials to access your account</p>
+      </div>
+
+      <form id="login-form" style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email Address</label>
+          <input type="email" class="form-input" id="login-email" required placeholder="name@domain.com">
+        </div>
+        
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label class="form-label" for="login-pass">Password</label>
+            <a href="#" class="text-xs text-primary-color" style="font-weight: 500;">Forgot password?</a>
+          </div>
+          <input type="password" class="form-input" id="login-pass" required placeholder="••••••••">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg w-full mt-sm" id="submit-login-btn">
+          Sign In
+        </button>
+      </form>
+
+      <div class="text-center text-sm text-secondary">
+        Don't have an account? 
+        <a href="/pages/register.html" class="text-primary-color font-medium">Create one now</a>
+      </div>
+      
+      <div class="gradient-divider" style="margin: 0.5rem 0;"></div>
+
+      <!-- Demo Accounts Box -->
+      <div style="padding: 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 0.8125rem;">
+        <div class="font-bold text-secondary mb-xs">🔒 Sandbox Test Accounts:</div>
+        <div style="margin-bottom: 0.25rem;">🧑 <strong>Customer:</strong> <span class="text-primary-color">user@luxestore.com</span> / <code>user123456</code></div>
+        <div>⚙️ <strong>Admin:</strong> <span class="text-primary-color">admin@luxestore.com</span> / <code>admin123456</code></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+  import { renderNavbar } from '/assets/js/navbar.js';
+  import { authAPI, setToken, setUser, isLoggedIn } from '/assets/js/api.js';
+  import { toast } from '/assets/js/utils.js';
+
+  renderNavbar();
+
+  // If already logged in, redirect away
+  if (isLoggedIn()) {
+    window.location.href = '/pages/dashboard.html';
+  }
+
+  const redirectUrl = new URLSearchParams(window.location.search).get('redirect') || '/pages/dashboard.html';
+
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-pass').value;
+
+    const btn = document.getElementById('submit-login-btn');
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
+
+    try {
+      const res = await authAPI.login({ email, password });
+      if (res.success && res.token) {
+        setToken(res.token);
+        setUser(res.user);
+        toast.success(`Welcome back, ${res.user.name}!`);
+        setTimeout(() => {
+          window.location.href = redirectUrl;
+        }, 1200);
+      }
+    } catch(err) {
+      toast.error(err.message || 'Login failed. Please check your credentials.');
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+    }
+  });
+</script>
+</body>
+</html>
