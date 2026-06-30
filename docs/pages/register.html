@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register — LuxeStore</title>
+  <meta name="description" content="Create a new LuxeStore account to manage your details, wishlist, and track orders.">
+  <link rel="stylesheet" href="/assets/css/global.css">
+  <style>
+    .auth-page { padding: calc(var(--nav-height) + 3rem) 0 4rem; display: flex; align-items: center; justify-content: center; }
+    .auth-card {
+      width: 100%; max-width: 440px; padding: 2.5rem;
+      background: var(--grad-card); border: 1px solid var(--color-border);
+      border-radius: var(--radius-2xl); display: flex; flex-direction: column; gap: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="auth-page">
+  <div class="container" style="display: flex; justify-content: center;">
+    <div class="auth-card">
+      <div class="text-center">
+        <h1 class="heading-1">Create Account</h1>
+        <p class="text-muted mt-sm">Join LuxeStore for premium shopping perks</p>
+      </div>
+
+      <form id="register-form" style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <div class="form-group">
+          <label class="form-label" for="reg-name">Full Name</label>
+          <input type="text" class="form-input" id="reg-name" required placeholder="Alex Johnson">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="reg-email">Email Address</label>
+          <input type="email" class="form-input" id="reg-email" required placeholder="name@domain.com">
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="reg-pass">Password</label>
+          <input type="password" class="form-input" id="reg-pass" required placeholder="Min 6 characters">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="reg-confirm-pass">Confirm Password</label>
+          <input type="password" class="form-input" id="reg-confirm-pass" required placeholder="Confirm your password">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg w-full mt-sm" id="submit-reg-btn">
+          Create Account
+        </button>
+      </form>
+
+      <div class="text-center text-sm text-secondary">
+        Already have an account? 
+        <a href="/pages/login.html" class="text-primary-color font-medium">Log in instead</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+  import { renderNavbar } from '/assets/js/navbar.js';
+  import { authAPI, setToken, setUser, isLoggedIn } from '/assets/js/api.js';
+  import { toast } from '/assets/js/utils.js';
+
+  renderNavbar();
+
+  // If already logged in, redirect away
+  if (isLoggedIn()) {
+    window.location.href = '/pages/dashboard.html';
+  }
+
+  document.getElementById('register-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-pass').value;
+    const confirmPass = document.getElementById('reg-confirm-pass').value;
+
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters long');
+      return;
+    }
+
+    if (password !== confirmPass) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    const btn = document.getElementById('submit-reg-btn');
+    btn.disabled = true;
+    btn.textContent = 'Registering…';
+
+    try {
+      const res = await authAPI.register({ name, email, password });
+      if (res.success && res.token) {
+        setToken(res.token);
+        setUser(res.user);
+        toast.success('Registration successful! Welcome to LuxeStore.');
+        setTimeout(() => {
+          window.location.href = '/pages/dashboard.html';
+        }, 1200);
+      }
+    } catch(err) {
+      toast.error(err.message || 'Registration failed. Try again.');
+      btn.disabled = false;
+      btn.textContent = 'Create Account';
+    }
+  });
+</script>
+</body>
+</html>

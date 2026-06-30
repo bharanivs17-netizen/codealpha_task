@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout — LuxeStore</title>
+  <meta name="description" content="Securely complete your purchase at LuxeStore.">
+  <link rel="stylesheet" href="/assets/css/global.css">
+  <style>
+    .checkout-page { padding: calc(var(--nav-height) + 2rem) 0 4rem; }
+    .checkout-layout { display: grid; grid-template-columns: 1fr 400px; gap: 2rem; align-items: start; }
+
+    .checkout-section {
+      background: var(--grad-card); border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl); padding: 2rem; margin-bottom: 1.5rem;
+    }
+    .section-title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+
+    .address-card {
+      border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 1rem;
+      cursor: pointer; transition: all 0.2s; position: relative; margin-bottom: 0.75rem;
+    }
+    .address-card.selected { border-color: var(--color-primary); background: rgba(79, 142, 247, 0.08); }
+    .address-card__check { position: absolute; top: 1rem; right: 1rem; font-size: 1rem; color: var(--color-primary); display: none; }
+    .address-card.selected .address-card__check { display: block; }
+
+    .checkout-summary-card {
+      background: var(--grad-card); border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl); padding: 1.75rem; position: sticky; top: calc(var(--nav-height) + 1rem);
+    }
+    .summary-item-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+    .summary-item-title { font-weight: 600; color: var(--text-primary); }
+
+    /* Stripe Card Form Styling */
+    #card-element {
+      background: rgba(255, 255, 255, 0.03); border: 1px solid var(--color-border);
+      border-radius: var(--radius-md); padding: 0.75rem 1rem; margin-bottom: 1rem;
+    }
+    #card-errors { color: var(--color-red); font-size: 0.8125rem; margin-top: 0.25rem; }
+
+    @media (max-width: 900px) {
+      .checkout-layout { grid-template-columns: 1fr; }
+      .checkout-summary-card { position: static; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="checkout-page">
+  <div class="container">
+    <h1 class="heading-1 mb-xl">🔒 Secure Checkout</h1>
+
+    <div class="checkout-layout">
+      <!-- Checkout Steps/Forms -->
+      <div>
+        <!-- Shipping Address Section -->
+        <div class="checkout-section">
+          <div class="section-title"><span>📦</span> Shipping Address</div>
+          
+          <div id="saved-addresses" style="margin-bottom: 1.5rem;"></div>
+          
+          <button class="btn btn-secondary btn-sm" id="show-address-form-btn" style="margin-bottom: 1rem;">
+            ➕ Add New Address
+          </button>
+
+          <form id="address-form" style="display: none; flex-direction: column; gap: 1rem;">
+            <div class="grid-2">
+              <div class="form-group">
+                <label class="form-label">Full Name *</label>
+                <input type="text" class="form-input" id="ship-name" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone Number *</label>
+                <input type="text" class="form-input" id="ship-phone" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Street Address *</label>
+              <input type="text" class="form-input" id="ship-street" required>
+            </div>
+            <div class="grid-3">
+              <div class="form-group">
+                <label class="form-label">City *</label>
+                <input type="text" class="form-input" id="ship-city" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">State *</label>
+                <input type="text" class="form-input" id="ship-state" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Postal Code *</label>
+                <input type="text" class="form-input" id="ship-zip" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Country</label>
+              <input type="text" class="form-input" id="ship-country" value="US">
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <input type="checkbox" id="ship-default">
+              <label for="ship-default" class="form-label" style="margin: 0; cursor: pointer;">Save as default address</label>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button type="button" class="btn btn-primary btn-sm" id="save-address-btn">Save Address</button>
+              <button type="button" class="btn btn-ghost btn-sm" id="cancel-address-btn">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Payment Method Section -->
+        <div class="checkout-section">
+          <div class="section-title"><span>💳</span> Payment Info</div>
+          
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <!-- Dummy Payment option -->
+            <label class="address-card selected" style="cursor: pointer; display: flex; flex-direction: column; gap: 0.25rem;">
+              <div style="font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                <input type="radio" name="payment-method" value="stripe" checked style="accent-color: var(--color-primary);">
+                Stripe Sandbox (Credit/Debit Card)
+              </div>
+              <div class="text-muted text-xs" style="margin-left: 1.5rem;">
+                Use the test card number: <code style="color: var(--color-primary);">4242 4242 4242 4242</code>
+              </div>
+            </label>
+
+            <!-- Stripe Element placeholder -->
+            <div id="payment-card-inputs" style="margin-top: 0.5rem;">
+              <label class="form-label">Card Details</label>
+              <!-- We will simulate a real card form or load Stripe JS -->
+              <div id="card-element">
+                <!-- Stripe card input goes here -->
+                <input type="text" class="form-input" id="dummy-card-num" placeholder="Card Number (4242 4242 4242 4242)" maxlength="19">
+                <div class="grid-2 mt-sm">
+                  <input type="text" class="form-input" id="dummy-card-exp" placeholder="MM/YY" maxlength="5">
+                  <input type="text" class="form-input" id="dummy-card-cvc" placeholder="CVC" maxlength="4">
+                </div>
+              </div>
+              <div id="card-errors" role="alert"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Notes -->
+        <div class="checkout-section">
+          <div class="section-title"><span>📝</span> Order Notes</div>
+          <div class="form-group">
+            <textarea class="form-input" id="order-notes" rows="3" placeholder="Notes about your delivery, e.g. special instructions for home delivery."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary Sidebar -->
+      <aside>
+        <div class="checkout-summary-card">
+          <div class="summary-title">Summary</div>
+          
+          <div id="checkout-items" style="max-height: 250px; overflow-y: auto; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; padding-right: 0.5rem;">
+            <!-- Items injected by JS -->
+          </div>
+
+          <div class="gradient-divider" style="margin: 1rem 0;"></div>
+
+          <div class="summary-item-row">
+            <span>Items Subtotal</span>
+            <span id="summary-subtotal">$0.00</span>
+          </div>
+          <div class="summary-item-row">
+            <span>Shipping</span>
+            <span id="summary-shipping">$0.00</span>
+          </div>
+          <div class="summary-item-row">
+            <span>Tax (8%)</span>
+            <span id="summary-tax">$0.00</span>
+          </div>
+          <div class="summary-item-row total">
+            <span class="font-bold" style="color: var(--text-primary);">Total</span>
+            <span id="summary-total" class="gradient-text font-bold" style="font-size: 1.25rem;">$0.00</span>
+          </div>
+
+          <button class="btn btn-primary btn-lg btn-block mt-xl" id="place-order-btn">
+            🔒 Pay & Place Order
+          </button>
+          
+          <div class="text-center mt-md text-xs text-muted">
+            By placing your order, you agree to our Terms of Use and Privacy Policy.
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+  import { renderNavbar } from '/assets/js/navbar.js';
+  import { cartAPI, authAPI, orderAPI, paymentAPI, isLoggedIn } from '/assets/js/api.js';
+  import { toast, formatPrice } from '/assets/js/utils.js';
+
+  renderNavbar();
+
+  if (!isLoggedIn()) {
+    window.location.href = '/pages/login.html?redirect=/pages/checkout.html';
+  }
+
+  let cart = null;
+  let addresses = [];
+  let selectedAddressId = null;
+
+  // Formatting dummy card number helper
+  const cardNum = document.getElementById('dummy-card-num');
+  cardNum?.addEventListener('input', (e) => {
+    let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    let formatted = '';
+    for (let i = 0; i < value.length; i++) {
+      if (i > 0 && i % 4 === 0) formatted += ' ';
+      formatted += value[i];
+    }
+    e.target.value = formatted.substring(0, 19);
+  });
+
+  const cardExp = document.getElementById('dummy-card-exp');
+  cardExp?.addEventListener('input', (e) => {
+    let value = e.target.value.replace(/\//g, '').replace(/[^0-9]/gi, '');
+    if (value.length > 2) {
+      e.target.value = value.substring(0, 2) + '/' + value.substring(2, 4);
+    } else {
+      e.target.value = value;
+    }
+  });
+
+  // Load checkout page data
+  async function initCheckout() {
+    try {
+      // 1. Get cart
+      const cartRes = await cartAPI.get();
+      cart = cartRes.cart;
+      if (!cart || !cart.items || cart.items.length === 0) {
+        toast.warning('Your cart is empty');
+        setTimeout(() => window.location.href = '/pages/shop.html', 1500);
+        return;
+      }
+      renderSummary();
+
+      // 2. Get user profile/addresses
+      const userRes = await authAPI.getMe();
+      addresses = userRes.user?.addresses || [];
+      renderAddresses();
+    } catch(e) {
+      toast.error('Initialization error: ' + e.message);
+    }
+  }
+
+  function renderSummary() {
+    const items = cart.items;
+    const subtotal = cart.totalPrice || items.reduce((a,i) => a + i.price * i.quantity, 0);
+    const shipping = subtotal >= 100 ? 0 : 9.99;
+    const tax = +(subtotal * 0.08).toFixed(2);
+    const total = +(subtotal + shipping + tax).toFixed(2);
+
+    document.getElementById('checkout-items').innerHTML = items.map(item => `
+      <div style="display: flex; gap: 0.75rem; align-items: center;">
+        <img src="${item.product?.thumbnail || 'https://via.placeholder.com/50x50'}" style="width: 44px; height: 44px; border-radius: 6px; object-fit: cover;" alt="">
+        <div style="flex: 1; min-width: 0;">
+          <div class="summary-item-title text-xs" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">${item.product?.name}</div>
+          <div class="text-xs text-muted">Qty: ${item.quantity} × ${formatPrice(item.price)}</div>
+        </div>
+        <span class="text-xs font-bold">${formatPrice(item.price * item.quantity)}</span>
+      </div>`).join('');
+
+    document.getElementById('summary-subtotal').textContent = formatPrice(subtotal);
+    document.getElementById('summary-shipping').innerHTML = shipping === 0 ? '<span class="text-green">Free</span>' : formatPrice(shipping);
+    document.getElementById('summary-tax').textContent = formatPrice(tax);
+    document.getElementById('summary-total').textContent = formatPrice(total);
+  }
+
+  function renderAddresses() {
+    const container = document.getElementById('saved-addresses');
+    if (addresses.length === 0) {
+      container.innerHTML = `<p class="text-muted text-sm">No saved addresses found. Please add a shipping address below.</p>`;
+      document.getElementById('address-form').style.display = 'flex';
+      return;
+    }
+
+    container.innerHTML = addresses.map(addr => `
+      <div class="address-card ${addr.isDefault ? 'selected' : ''}" data-id="${addr._id}">
+        <span class="address-card__check">✓</span>
+        <div style="font-weight: 600;">${addr.fullName}</div>
+        <div class="text-secondary text-sm">${addr.street}, ${addr.city}, ${addr.state} ${addr.postalCode}</div>
+        <div class="text-muted text-sm">Phone: ${addr.phone}</div>
+      </div>`).join('');
+
+    // Update selected address ID
+    const def = addresses.find(a => a.isDefault) || addresses[0];
+    if (def) selectAddress(def._id);
+
+    // Event listener
+    container.querySelectorAll('.address-card').forEach(card => {
+      card.addEventListener('click', () => selectAddress(card.dataset.id));
+    });
+  }
+
+  function selectAddress(id) {
+    selectedAddressId = id;
+    document.querySelectorAll('.address-card').forEach(card => {
+      card.classList.toggle('selected', card.dataset.id === id);
+    });
+  }
+
+  // Address Form toggle
+  document.getElementById('show-address-form-btn').addEventListener('click', () => {
+    document.getElementById('address-form').style.display = 'flex';
+    document.getElementById('show-address-form-btn').style.display = 'none';
+  });
+
+  document.getElementById('cancel-address-btn').addEventListener('click', () => {
+    document.getElementById('address-form').reset();
+    document.getElementById('address-form').style.display = 'none';
+    document.getElementById('show-address-form-btn').style.display = 'inline-flex';
+  });
+
+  document.getElementById('save-address-btn').addEventListener('click', async () => {
+    const fullName = document.getElementById('ship-name').value.trim();
+    const phone = document.getElementById('ship-phone').value.trim();
+    const street = document.getElementById('ship-street').value.trim();
+    const city = document.getElementById('ship-city').value.trim();
+    const state = document.getElementById('ship-state').value.trim();
+    const postalCode = document.getElementById('ship-zip').value.trim();
+    const country = document.getElementById('ship-country').value.trim() || 'US';
+    const isDefault = document.getElementById('ship-default').checked;
+
+    if (!fullName || !phone || !street || !city || !state || !postalCode) {
+      toast.error('Please fill in all address fields');
+      return;
+    }
+
+    try {
+      const res = await authAPI.addAddress({ fullName, phone, street, city, state, postalCode, country, isDefault });
+      addresses = res.addresses;
+      renderAddresses();
+      document.getElementById('address-form').reset();
+      document.getElementById('address-form').style.display = 'none';
+      document.getElementById('show-address-form-btn').style.display = 'inline-flex';
+      toast.success('Address saved successfully!');
+    } catch(e) {
+      toast.error('Failed to save address: ' + e.message);
+    }
+  });
+
+  // Place order + payments flow
+  document.getElementById('place-order-btn').addEventListener('click', async () => {
+    if (!selectedAddressId) {
+      toast.error('Please select or add a shipping address');
+      return;
+    }
+
+    // Basic Card Validation (simulate client-side check)
+    const cNum = document.getElementById('dummy-card-num').value.replace(/\s+/g, '');
+    const cExp = document.getElementById('dummy-card-exp').value;
+    const cCvc = document.getElementById('dummy-card-cvc').value;
+
+    if (!cNum || cNum.length < 16) {
+      toast.error('Invalid Card Number');
+      return;
+    }
+    if (!cExp || !cExp.includes('/')) {
+      toast.error('Invalid Card Expiry Date');
+      return;
+    }
+    if (!cCvc || cCvc.length < 3) {
+      toast.error('Invalid Card CVC');
+      return;
+    }
+
+    const placeBtn = document.getElementById('place-order-btn');
+    placeBtn.disabled = true;
+    placeBtn.innerHTML = '🔒 Processing Payment…';
+
+    try {
+      const selectedAddress = addresses.find(a => a._id === selectedAddressId);
+      const subtotal = cart.totalPrice;
+      const shipping = subtotal >= 100 ? 0 : 9.99;
+      const tax = +(subtotal * 0.08).toFixed(2);
+      const totalAmount = +(subtotal + shipping + tax).toFixed(2);
+
+      // Create Payment Intent on Stripe Sandbox (Backend calls Stripe API)
+      let intentRes;
+      let paymentIntentId = 'mock_pi_' + Math.random().toString(36).substr(2, 9);
+
+      try {
+        intentRes = await paymentAPI.createIntent(totalAmount);
+        if (intentRes.success && intentRes.paymentIntentId) {
+          paymentIntentId = intentRes.paymentIntentId;
+        }
+      } catch (e) {
+        // Fallback to mock payment processing if stripe configuration is missing
+        console.warn('Stripe integration not configured. Proceeding with Sandbox/Mock Payment Intent.');
+      }
+
+      // Create the order on the database
+      const orderRes = await orderAPI.place({
+        shippingAddress: {
+          fullName: selectedAddress.fullName,
+          phone: selectedAddress.phone,
+          street: selectedAddress.street,
+          city: selectedAddress.city,
+          state: selectedAddress.state,
+          postalCode: selectedAddress.postalCode,
+          country: selectedAddress.country
+        },
+        paymentMethod: 'stripe',
+        paymentIntentId: paymentIntentId,
+        notes: document.getElementById('order-notes').value.trim()
+      });
+
+      if (orderRes.success) {
+        toast.success('Order placed successfully! Redirecting…');
+        setTimeout(() => {
+          window.location.href = `/pages/order-success.html?orderId=${orderRes.order._id}`;
+        }, 1500);
+      } else {
+        throw new Error('Order creation failed on backend');
+      }
+
+    } catch(e) {
+      toast.error('Transaction Failed: ' + e.message);
+      placeBtn.disabled = false;
+      placeBtn.innerHTML = '🔒 Pay & Place Order';
+    }
+  });
+
+  initCheckout();
+</script>
+</body>
+</html>

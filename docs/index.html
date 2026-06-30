@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LuxeStore — Premium E-Commerce Experience</title>
+  <meta name="description" content="Discover premium electronics, fashion, footwear, and accessories at LuxeStore. Apple meets Amazon meets Nike in one stunning store.">
+  <link rel="stylesheet" href="/assets/css/global.css">
+  <style>
+    /* ── Hero ── */
+    .hero { min-height: 100vh; }
+    .hero__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+    .hero__visual { position: relative; }
+    .hero__img-card {
+      position: relative;
+      border-radius: 2rem;
+      overflow: hidden;
+      aspect-ratio: 4/5;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .hero__img-card img { width:100%; height:100%; object-fit:cover; }
+    .hero__img-card::after {
+      content:''; position:absolute; inset:0;
+      background: linear-gradient(to top, rgba(5,10,24,0.7) 0%, transparent 50%);
+    }
+    .hero__floating-card {
+      position: absolute;
+      background: rgba(5,10,24,0.85);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 1.25rem;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      animation: float 6s ease-in-out infinite;
+    }
+    .hero__floating-card-1 { bottom: 2rem;  left: -2rem;  animation-delay: 0s; }
+    .hero__floating-card-2 { top:    2rem;  right:-2rem;  animation-delay: -3s; }
+    .hero__floating-icon { font-size:1.75rem; }
+    .hero__floating-label { font-size:.8125rem; color:var(--text-muted); }
+    .hero__floating-value { font-weight:700; font-size:.9375rem; }
+
+    /* ── Trust bar ── */
+    .trust-bar {
+      background: var(--color-surface);
+      border-top: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--color-border);
+      padding: 1.25rem 0;
+    }
+    .trust-bar__items { display:flex; justify-content:center; gap:3rem; flex-wrap:wrap; }
+    .trust-bar__item  { display:flex; align-items:center; gap:.625rem; font-size:.9375rem; font-weight:500; color:var(--text-secondary); }
+
+    /* ── Featured marquee ── */
+    .marquee-section { overflow:hidden; padding:1.5rem 0; border-top:1px solid var(--color-border); border-bottom:1px solid var(--color-border); }
+    .marquee-track {
+      display:flex; gap:2rem; width:max-content;
+      animation: marquee 30s linear infinite;
+    }
+    .marquee-track:hover { animation-play-state:paused; }
+    @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+    .marquee-item { display:flex; align-items:center; gap:.5rem; white-space:nowrap; color:var(--text-muted); font-size:.875rem; font-weight:500; }
+
+    /* ── Promo Banner ── */
+    .promo-banner {
+      background: linear-gradient(135deg, rgba(79,142,247,0.15) 0%, rgba(168,85,247,0.15) 100%);
+      border: 1px solid rgba(79,142,247,0.2);
+      border-radius: 2rem;
+      padding: 3rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 2rem;
+    }
+    .promo-banner__eyebrow { font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--color-primary); margin-bottom:.75rem; }
+    .promo-banner__title   { font-family:var(--font-display); font-size:clamp(1.5rem,3vw,2.25rem); font-weight:700; margin-bottom:.75rem; }
+    .promo-banner__desc    { color:var(--text-secondary); line-height:1.7; }
+
+    @media(max-width:768px){
+      .hero__grid { grid-template-columns:1fr; }
+      .hero__visual { display:none; }
+      .promo-banner { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar injected by JS -->
+
+<!-- ── HERO ─────────────────────────────────────────────── -->
+<section class="hero" id="hero">
+  <div class="hero__orb hero__orb-1"></div>
+  <div class="hero__orb hero__orb-2"></div>
+  <div class="container">
+    <div class="hero__grid">
+      <div class="hero__content">
+        <div class="hero__eyebrow">
+          <span>✨</span>
+          <span>New Season Collection 2025</span>
+        </div>
+        <h1 class="display-1 hero__title">
+          Experience <span class="gradient-text">Premium</span><br>
+          Shopping Redefined
+        </h1>
+        <p class="hero__desc">
+          Curated technology, fashion, and lifestyle products from the world's best brands.
+          Free shipping on orders over $100. Easy 30-day returns.
+        </p>
+        <div class="hero__ctas">
+          <a href="/pages/shop.html" class="btn btn-primary btn-lg">
+            🛍️ Shop Now
+          </a>
+          <a href="/pages/categories.html" class="btn btn-secondary btn-lg">
+            Browse Categories
+          </a>
+        </div>
+        <div class="hero__stats stagger-children">
+          <div class="hero__stat">
+            <div class="hero__stat-number gradient-text">50K+</div>
+            <div class="hero__stat-label">Happy Customers</div>
+          </div>
+          <div class="hero__stat">
+            <div class="hero__stat-number gradient-text">1,200+</div>
+            <div class="hero__stat-label">Premium Products</div>
+          </div>
+          <div class="hero__stat">
+            <div class="hero__stat-number gradient-text">4.9★</div>
+            <div class="hero__stat-label">Average Rating</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero__visual reveal-right">
+        <div class="hero__img-card">
+          <img src="https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=800" alt="Premium Products">
+        </div>
+        <div class="hero__floating-card hero__floating-card-1 glass">
+          <span class="hero__floating-icon">📦</span>
+          <div>
+            <div class="hero__floating-label">Orders Shipped Today</div>
+            <div class="hero__floating-value">2,847</div>
+          </div>
+        </div>
+        <div class="hero__floating-card hero__floating-card-2 glass">
+          <span class="hero__floating-icon">⭐</span>
+          <div>
+            <div class="hero__floating-label">Average Review</div>
+            <div class="hero__floating-value">4.9 / 5.0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TRUST BAR ────────────────────────────────────────── -->
+<div class="trust-bar">
+  <div class="container">
+    <div class="trust-bar__items">
+      <div class="trust-bar__item">🚚 <span>Free Shipping over $100</span></div>
+      <div class="trust-bar__item">🔄 <span>30-Day Easy Returns</span></div>
+      <div class="trust-bar__item">🔒 <span>Secure Checkout</span></div>
+      <div class="trust-bar__item">🎁 <span>Gift Wrapping Available</span></div>
+      <div class="trust-bar__item">📞 <span>24/7 Support</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CATEGORIES ───────────────────────────────────────── -->
+<section class="section" id="categories-section">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="eyebrow">Explore</span>
+      <h2 class="heading-1">Shop by Category</h2>
+      <p>Curated collections across every lifestyle need</p>
+    </div>
+    <div class="category-grid stagger-children" id="home-categories">
+      <!-- Injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURED PRODUCTS ─────────────────────────────────── -->
+<section class="section" id="featured-section" style="background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(79,142,247,0.07) 0%, transparent 70%);">
+  <div class="container">
+    <div class="section-header-flex reveal">
+      <div>
+        <span class="eyebrow" style="display:block;margin-bottom:.5rem;">Handpicked</span>
+        <h2 class="heading-1">Featured Products</h2>
+      </div>
+      <a href="/pages/shop.html?featured=true" class="btn btn-secondary">View All →</a>
+    </div>
+    <div class="product-grid" id="featured-products">
+      <!-- Injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ── MARQUEE ───────────────────────────────────────────── -->
+<div class="marquee-section">
+  <div class="marquee-track" id="marquee-track">
+    <span class="marquee-item">🖥️ Electronics</span>
+    <span class="marquee-item">👗 Fashion</span>
+    <span class="marquee-item">👟 Footwear</span>
+    <span class="marquee-item">🎧 Audio</span>
+    <span class="marquee-item">⌚ Wearables</span>
+    <span class="marquee-item">💼 Accessories</span>
+    <span class="marquee-item">✨ New Arrivals</span>
+    <span class="marquee-item">🔥 Best Sellers</span>
+    <span class="marquee-item">🖥️ Electronics</span>
+    <span class="marquee-item">👗 Fashion</span>
+    <span class="marquee-item">👟 Footwear</span>
+    <span class="marquee-item">🎧 Audio</span>
+    <span class="marquee-item">⌚ Wearables</span>
+    <span class="marquee-item">💼 Accessories</span>
+    <span class="marquee-item">✨ New Arrivals</span>
+    <span class="marquee-item">🔥 Best Sellers</span>
+  </div>
+</div>
+
+<!-- ── NEW ARRIVALS ──────────────────────────────────────── -->
+<section class="section" id="new-arrivals-section">
+  <div class="container">
+    <div class="section-header-flex reveal">
+      <div>
+        <span class="eyebrow" style="display:block;margin-bottom:.5rem;">Just Dropped</span>
+        <h2 class="heading-1">New Arrivals</h2>
+      </div>
+      <a href="/pages/shop.html?sort=newest" class="btn btn-secondary">See All New →</a>
+    </div>
+    <div class="product-grid" id="new-arrivals">
+      <!-- Injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ── PROMO BANNER ──────────────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <div class="promo-banner reveal">
+      <div>
+        <div class="promo-banner__eyebrow">Limited Time Offer</div>
+        <h2 class="promo-banner__title">
+          Summer Sale — Up to <span class="gradient-text-gold">40% Off</span>
+        </h2>
+        <p class="promo-banner__desc">
+          Shop our biggest sale of the year. Premium products, unbeatable prices.
+          Free shipping on every order this weekend only.
+        </p>
+        <div style="margin-top:1.5rem;">
+          <a href="/pages/shop.html" class="btn btn-primary btn-lg">Shop the Sale →</a>
+        </div>
+      </div>
+      <div style="font-size:6rem;opacity:.5;text-align:center;">🛍️</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── BEST SELLERS ──────────────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <div class="section-header-flex reveal">
+      <div>
+        <span class="eyebrow" style="display:block;margin-bottom:.5rem;">Top Picks</span>
+        <h2 class="heading-1">Best Sellers</h2>
+      </div>
+      <a href="/pages/shop.html?sort=popular" class="btn btn-secondary">All Best Sellers →</a>
+    </div>
+    <div class="product-grid" id="best-sellers">
+      <!-- Injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ────────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <div class="footer__logo">LuxeStore</div>
+        <p class="footer__desc">
+          Premium e-commerce inspired by Apple's design, Amazon's convenience,
+          and Nike's energy. Shop the future, today.
+        </p>
+        <div class="footer__social" style="margin-top:1.5rem;">
+          <a href="#" class="footer__social-link">𝕏</a>
+          <a href="#" class="footer__social-link">in</a>
+          <a href="#" class="footer__social-link">ig</a>
+          <a href="#" class="footer__social-link">yt</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer__col-title">Shop</div>
+        <div class="footer__links">
+          <a href="/pages/shop.html"       class="footer__link">All Products</a>
+          <a href="/pages/categories.html" class="footer__link">Categories</a>
+          <a href="/pages/shop.html?featured=true" class="footer__link">Featured</a>
+          <a href="/pages/shop.html?sort=popular"  class="footer__link">Best Sellers</a>
+          <a href="/pages/shop.html?sort=newest"   class="footer__link">New Arrivals</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer__col-title">Account</div>
+        <div class="footer__links">
+          <a href="/pages/login.html"     class="footer__link">Login</a>
+          <a href="/pages/register.html"  class="footer__link">Register</a>
+          <a href="/pages/dashboard.html" class="footer__link">My Dashboard</a>
+          <a href="/pages/dashboard.html#orders"   class="footer__link">My Orders</a>
+          <a href="/pages/dashboard.html#wishlist" class="footer__link">Wishlist</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer__col-title">Help</div>
+        <div class="footer__links">
+          <a href="#" class="footer__link">FAQ</a>
+          <a href="#" class="footer__link">Shipping Policy</a>
+          <a href="#" class="footer__link">Return Policy</a>
+          <a href="#" class="footer__link">Contact Us</a>
+          <a href="#" class="footer__link">Privacy Policy</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2025 LuxeStore. All rights reserved.</span>
+      <span>Built with ❤️ using Node.js, Express & MongoDB</span>
+    </div>
+  </div>
+</footer>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<script type="module">
+  import { renderNavbar } from '/assets/js/navbar.js';
+  import { productAPI, categoryAPI, wishlistAPI, cartAPI, isLoggedIn, getUser } from '/assets/js/api.js';
+  import { toast, productCardHTML, showSkeletons, initScrollReveal, updateCartBadge } from '/assets/js/utils.js';
+
+  renderNavbar();
+
+  // ── Load Categories ────────────────────────────────────
+  async function loadCategories() {
+    const grid = document.getElementById('home-categories');
+    try {
+      const { categories } = await categoryAPI.getAll();
+      grid.innerHTML = categories.slice(0, 6).map(cat => `
+        <a href="/pages/shop.html?category=${cat._id}" class="category-card">
+          <div class="category-card__icon">${cat.icon || '📦'}</div>
+          <div class="category-card__name">${cat.name}</div>
+          <div class="category-card__count">${cat.description}</div>
+        </a>`).join('');
+      grid.classList.add('visible');
+    } catch (e) {
+      grid.innerHTML = '<p class="text-muted">Could not load categories</p>';
+    }
+  }
+
+  // ── Load Products ──────────────────────────────────────
+  let wishlistIds = [];
+
+  async function loadWishlist() {
+    if (!isLoggedIn()) return;
+    try {
+      const { wishlist } = await wishlistAPI.get();
+      wishlistIds = (wishlist?.products || []).map(p => p._id || p);
+    } catch {}
+  }
+
+  async function loadProductSection(elementId, params) {
+    const container = document.getElementById(elementId);
+    showSkeletons(container, 4);
+    try {
+      const { products } = await productAPI.getAll({ ...params, limit: 4 });
+      container.innerHTML = products.map(p => productCardHTML(p, wishlistIds)).join('');
+      attachCardEvents(container);
+    } catch {
+      container.innerHTML = '<p class="text-muted text-center" style="grid-column:1/-1;padding:2rem;">Could not load products</p>';
+    }
+  }
+
+  // ── Cart & Wishlist button events ──────────────────────
+  function attachCardEvents(container) {
+    container.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!isLoggedIn()) { toast.warning('Please login to add to cart'); window.location.href='/pages/login.html'; return; }
+        const id = btn.dataset.id;
+        btn.disabled = true; btn.textContent = 'Adding…';
+        try {
+          const { cart } = await cartAPI.add(id, 1);
+          updateCartBadge(cart.items.length);
+          toast.success('Added to cart!');
+        } catch(e) { toast.error(e.message); }
+        finally { btn.disabled = false; btn.innerHTML = '🛒 Add to Cart'; }
+      });
+    });
+
+    container.querySelectorAll('.wishlist-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!isLoggedIn()) { toast.warning('Please login'); window.location.href='/pages/login.html'; return; }
+        const id = btn.dataset.id;
+        try {
+          const { added } = await wishlistAPI.toggle(id);
+          if (added) { btn.textContent='❤️'; btn.classList.add('wishlisted'); toast.success('Added to wishlist!'); }
+          else        { btn.textContent='🤍'; btn.classList.remove('wishlisted'); toast.info('Removed from wishlist'); }
+        } catch(e) { toast.error(e.message); }
+      });
+    });
+  }
+
+  // ── Init ───────────────────────────────────────────────
+  async function init() {
+    await loadWishlist();
+    await Promise.all([
+      loadCategories(),
+      loadProductSection('featured-products', { featured: 'true', sort: 'rating' }),
+      loadProductSection('new-arrivals',       { sort: 'newest' }),
+      loadProductSection('best-sellers',       { sort: 'popular' }),
+    ]);
+    initScrollReveal();
+  }
+
+  init();
+</script>
+</body>
+</html>

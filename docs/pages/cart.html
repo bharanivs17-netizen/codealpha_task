@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Cart — LuxeStore</title>
+  <meta name="description" content="Review your cart and proceed to checkout at LuxeStore.">
+  <link rel="stylesheet" href="/assets/css/global.css">
+  <style>
+    .cart-page { padding:calc(var(--nav-height)+2rem) 0 4rem; }
+    .cart-layout { display:grid; grid-template-columns:1fr 380px; gap:2rem; align-items:start; }
+
+    /* Cart Items */
+    .cart-items-header {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--color-border);
+    }
+    .cart-item {
+      display:grid; grid-template-columns:120px 1fr auto; gap:1.25rem;
+      align-items:center; padding:1.25rem;
+      background:var(--grad-card); border:1px solid var(--color-border);
+      border-radius:var(--radius-xl); margin-bottom:1rem;
+      transition:border-color .2s, box-shadow .2s;
+    }
+    .cart-item:hover { border-color:rgba(79,142,247,.25); }
+    .cart-item__img { aspect-ratio:1; border-radius:var(--radius-lg); overflow:hidden; background:rgba(255,255,255,.04); }
+    .cart-item__img img { width:100%; height:100%; object-fit:cover; }
+    .cart-item__name   { font-weight:600; font-size:1rem; margin-bottom:.25rem; }
+    .cart-item__cat    { font-size:.8125rem; color:var(--color-primary); font-weight:600; text-transform:uppercase; letter-spacing:.04em; margin-bottom:.375rem; }
+    .cart-item__price  { font-size:.9375rem; color:var(--text-secondary); }
+    .cart-item__actions { display:flex; flex-direction:column; align-items:flex-end; gap:.75rem; }
+    .cart-item__total   { font-family:var(--font-display); font-size:1.25rem; font-weight:700; }
+    .qty-selector-sm { display:flex; align-items:center; gap:.5rem; }
+    .qty-btn-sm { width:32px; height:32px; border-radius:var(--radius-md); background:var(--color-surface); border:1px solid var(--color-border); color:var(--text-primary); font-size:1rem; display:flex; align-items:center; justify-content:center; transition:all .15s; }
+    .qty-btn-sm:hover { background:var(--color-primary); border-color:var(--color-primary); }
+    .qty-val-sm { font-weight:700; min-width:28px; text-align:center; }
+    .remove-btn { color:var(--text-muted); font-size:.875rem; transition:color .15s; }
+    .remove-btn:hover { color:var(--color-red); }
+
+    /* Empty cart */
+    .empty-cart { text-align:center; padding:5rem 2rem; }
+    .empty-cart__icon { font-size:5rem; margin-bottom:1.5rem; }
+
+    /* Order Summary */
+    .order-summary {
+      background:var(--grad-card); border:1px solid var(--color-border);
+      border-radius:var(--radius-xl); padding:1.75rem;
+      position:sticky; top:calc(var(--nav-height)+1rem);
+    }
+    .summary-title { font-family:var(--font-display); font-size:1.25rem; font-weight:700; margin-bottom:1.5rem; }
+    .summary-row { display:flex; justify-content:space-between; align-items:center; padding:.625rem 0; font-size:.9375rem; }
+    .summary-row:not(:last-child) { border-bottom:1px solid var(--color-border); }
+    .summary-row.total { font-family:var(--font-display); font-size:1.25rem; font-weight:700; border-top:2px solid var(--color-border); padding-top:1rem; margin-top:.5rem; }
+    .promo-input { display:flex; gap:.5rem; margin-top:1rem; }
+
+    @media(max-width:900px){ .cart-layout{grid-template-columns:1fr;} .order-summary{position:static;} }
+    @media(max-width:600px){ .cart-item{grid-template-columns:80px 1fr;} .cart-item__actions{grid-column:1/-1;flex-direction:row;justify-content:space-between;align-items:center;} }
+  </style>
+</head>
+<body>
+
+<div class="cart-page">
+  <div class="container">
+    <h1 class="heading-1" style="margin-bottom:2rem;">
+      🛒 Shopping Cart
+      <span id="cart-count" style="color:var(--text-muted);font-size:1.125rem;font-weight:400;"></span>
+    </h1>
+
+    <!-- Loading -->
+    <div id="cart-loading">
+      <div style="display:grid;grid-template-columns:1fr 380px;gap:2rem;">
+        <div style="display:flex;flex-direction:column;gap:1rem;">
+          ${[1,2,3].map(() => `<div class="skeleton" style="height:150px;border-radius:1.25rem;"></div>`).join('')}
+        </div>
+        <div class="skeleton" style="height:400px;border-radius:1.25rem;"></div>
+      </div>
+    </div>
+
+    <!-- Cart Content -->
+    <div id="cart-content" style="display:none;">
+
+      <!-- Empty cart -->
+      <div class="empty-cart" id="empty-cart" style="display:none;">
+        <div class="empty-cart__icon">🛒</div>
+        <h2 class="heading-2" style="margin-bottom:1rem;">Your cart is empty</h2>
+        <p class="text-muted" style="margin-bottom:2rem;">Looks like you haven't added anything yet. Start shopping!</p>
+        <a href="/pages/shop.html" class="btn btn-primary btn-lg">Start Shopping</a>
+      </div>
+
+      <!-- Cart layout -->
+      <div class="cart-layout" id="cart-layout">
+        <!-- Items -->
+        <div>
+          <div class="cart-items-header">
+            <span class="text-secondary"><span id="item-count">0</span> items</span>
+            <button class="btn btn-ghost btn-sm text-red" id="clear-cart-btn">🗑️ Clear Cart</button>
+          </div>
+          <div id="cart-items"></div>
+        </div>
+
+        <!-- Summary -->
+        <div class="order-summary">
+          <div class="summary-title">Order Summary</div>
+          <div class="summary-row">
+            <span class="text-secondary">Subtotal</span>
+            <span id="subtotal">$0.00</span>
+          </div>
+          <div class="summary-row">
+            <span class="text-secondary">Shipping</span>
+            <span id="shipping-cost"><span class="text-green">Free</span></span>
+          </div>
+          <div class="summary-row">
+            <span class="text-secondary">Tax (8%)</span>
+            <span id="tax-amount">$0.00</span>
+          </div>
+          <div class="summary-row total">
+            <span>Total</span>
+            <span id="total-price" class="gradient-text">$0.00</span>
+          </div>
+
+          <!-- Promo code -->
+          <div style="margin:1.25rem 0;">
+            <label class="form-label">Promo Code</label>
+            <div class="promo-input">
+              <input type="text" class="form-input" id="promo-input" placeholder="Enter code…">
+              <button class="btn btn-secondary btn-sm" id="promo-btn">Apply</button>
+            </div>
+          </div>
+
+          <a href="/pages/checkout.html" class="btn btn-primary btn-lg btn-block" id="checkout-btn">
+            Proceed to Checkout →
+          </a>
+          <a href="/pages/shop.html" class="btn btn-ghost btn-block mt-md" style="justify-content:center;">
+            ← Continue Shopping
+          </a>
+
+          <!-- Trust badges -->
+          <div style="display:flex;flex-direction:column;gap:.625rem;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--color-border);">
+            <div style="display:flex;align-items:center;gap:.5rem;font-size:.8125rem;color:var(--text-muted);">🔒 Secure SSL Checkout</div>
+            <div style="display:flex;align-items:center;gap:.5rem;font-size:.8125rem;color:var(--text-muted);">🔄 Free 30-day returns</div>
+            <div style="display:flex;align-items:center;gap:.5rem;font-size:.8125rem;color:var(--text-muted);">📞 24/7 Customer Support</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+  import { renderNavbar } from '/assets/js/navbar.js';
+  import { cartAPI, isLoggedIn } from '/assets/js/api.js';
+  import { toast, formatPrice, updateCartBadge } from '/assets/js/utils.js';
+
+  renderNavbar();
+
+  if (!isLoggedIn()) {
+    window.location.href = '/pages/login.html?redirect=/pages/cart.html';
+  }
+
+  let cartData = null;
+
+  async function loadCart() {
+    try {
+      const { cart } = await cartAPI.get();
+      cartData = cart;
+      document.getElementById('cart-loading').style.display = 'none';
+      document.getElementById('cart-content').style.display = 'block';
+      renderCart(cart);
+    } catch(e) {
+      toast.error('Failed to load cart: ' + e.message);
+    }
+  }
+
+  function renderCart(cart) {
+    const items = cart?.items || [];
+
+    if (items.length === 0) {
+      document.getElementById('empty-cart').style.display = 'block';
+      document.getElementById('cart-layout').style.display = 'none';
+      document.getElementById('cart-count').textContent = '';
+      return;
+    }
+
+    document.getElementById('empty-cart').style.display = 'none';
+    document.getElementById('cart-layout').style.display = 'grid';
+    document.getElementById('cart-count').textContent = `(${items.length} item${items.length!==1?'s':''})`;
+    document.getElementById('item-count').textContent = items.length;
+
+    document.getElementById('cart-items').innerHTML = items.map(item => {
+      const p = item.product;
+      return `
+        <div class="cart-item" data-id="${p?._id}">
+          <div class="cart-item__img">
+            <a href="/pages/product.html?slug=${p?.slug}">
+              <img src="${p?.thumbnail || 'https://via.placeholder.com/120x120/080F22/4F8EF7?text=?'}" alt="${p?.name}">
+            </a>
+          </div>
+          <div>
+            <div class="cart-item__cat">${p?.category?.name || ''}</div>
+            <div class="cart-item__name"><a href="/pages/product.html?slug=${p?.slug}">${p?.name || 'Product'}</a></div>
+            <div class="cart-item__price">${formatPrice(item.price)} each</div>
+            ${p?.stock < 5 ? `<span class="badge badge-gold" style="margin-top:.375rem;">Only ${p.stock} left</span>` : ''}
+          </div>
+          <div class="cart-item__actions">
+            <div class="qty-selector-sm">
+              <button class="qty-btn-sm qty-dec" data-id="${p?._id}" ${item.quantity<=1?'disabled':''}>−</button>
+              <span class="qty-val-sm">${item.quantity}</span>
+              <button class="qty-btn-sm qty-inc" data-id="${p?._id}" ${item.quantity>=(p?.stock||0)?'disabled':''}>+</button>
+            </div>
+            <span class="cart-item__total">${formatPrice(item.price * item.quantity)}</span>
+            <button class="remove-btn" data-id="${p?._id}" title="Remove">🗑️ Remove</button>
+          </div>
+        </div>`;
+    }).join('');
+
+    // Attach events
+    document.querySelectorAll('.qty-dec').forEach(btn => {
+      btn.addEventListener('click', () => updateQty(btn.dataset.id, -1));
+    });
+    document.querySelectorAll('.qty-inc').forEach(btn => {
+      btn.addEventListener('click', () => updateQty(btn.dataset.id, 1));
+    });
+    document.querySelectorAll('.remove-btn').forEach(btn => {
+      btn.addEventListener('click', () => removeItem(btn.dataset.id));
+    });
+
+    updateSummary(items);
+  }
+
+  function updateSummary(items) {
+    const subtotal   = items.reduce((a,i) => a + i.price * i.quantity, 0);
+    const shipping   = subtotal >= 100 ? 0 : 9.99;
+    const tax        = +(subtotal * 0.08).toFixed(2);
+    const total      = +(subtotal + shipping + tax).toFixed(2);
+
+    document.getElementById('subtotal').textContent = formatPrice(subtotal);
+    document.getElementById('shipping-cost').innerHTML = shipping === 0 ? '<span class="text-green">Free</span>' : formatPrice(shipping);
+    document.getElementById('tax-amount').textContent  = formatPrice(tax);
+    document.getElementById('total-price').textContent = formatPrice(total);
+    updateCartBadge(items.length);
+  }
+
+  async function updateQty(productId, delta) {
+    const item     = cartData.items.find(i => i.product?._id === productId);
+    if (!item) return;
+    const newQty   = item.quantity + delta;
+    if (newQty < 1) return;
+    try {
+      const { cart } = await cartAPI.update(productId, newQty);
+      cartData = cart;
+      renderCart(cart);
+    } catch(e) { toast.error(e.message); }
+  }
+
+  async function removeItem(productId) {
+    try {
+      const { cart } = await cartAPI.remove(productId);
+      cartData = cart;
+      renderCart(cart);
+      toast.info('Item removed from cart');
+    } catch(e) { toast.error(e.message); }
+  }
+
+  document.getElementById('clear-cart-btn').addEventListener('click', async () => {
+    if (!confirm('Clear all items from cart?')) return;
+    try {
+      await cartAPI.clear();
+      cartData = { items: [], totalPrice: 0 };
+      renderCart(cartData);
+      toast.info('Cart cleared');
+    } catch(e) { toast.error(e.message); }
+  });
+
+  document.getElementById('promo-btn').addEventListener('click', () => {
+    toast.info('Promo codes coming soon!');
+  });
+
+  loadCart();
+</script>
+</body>
+</html>

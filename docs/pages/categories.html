@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Categories — LuxeStore</title>
+  <meta name="description" content="Browse all product categories at LuxeStore — Electronics, Fashion, Footwear, Audio, Wearables and more.">
+  <link rel="stylesheet" href="/assets/css/global.css">
+  <style>
+    .categories-hero {
+      padding: calc(var(--nav-height) + 3rem) 0 3rem;
+      text-align: center;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(79,142,247,0.15) 0%, transparent 70%);
+    }
+    .categories-hero h1 { margin-bottom:1rem; }
+    .categories-hero p  { color:var(--text-secondary); font-size:1.125rem; }
+
+    .categories-big-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 4rem;
+    }
+
+    .cat-big-card {
+      position: relative;
+      border-radius: 1.75rem;
+      overflow: hidden;
+      aspect-ratio: 4/3;
+      cursor: pointer;
+      border: 1px solid var(--color-border);
+      transition: transform .3s var(--ease-out), box-shadow .3s;
+      display: block;
+    }
+    .cat-big-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    }
+    .cat-big-card__bg {
+      width:100%; height:100%; object-fit:cover;
+      transition: transform .5s var(--ease-out);
+    }
+    .cat-big-card:hover .cat-big-card__bg { transform:scale(1.08); }
+
+    .cat-big-card__overlay {
+      position: absolute; inset:0;
+      background: linear-gradient(to top, rgba(5,10,24,.85) 0%, rgba(5,10,24,.1) 60%);
+    }
+    .cat-big-card__content {
+      position: absolute; bottom:0; left:0; right:0;
+      padding: 2rem;
+    }
+    .cat-big-card__icon  { font-size:2.5rem; margin-bottom:.5rem; }
+    .cat-big-card__name  { font-family:var(--font-display); font-size:1.5rem; font-weight:700; color:#fff; }
+    .cat-big-card__count { color:rgba(255,255,255,.7); font-size:.875rem; margin-top:.25rem; }
+    .cat-big-card__badge {
+      position:absolute; top:1rem; right:1rem;
+      background:rgba(79,142,247,.2); border:1px solid rgba(79,142,247,.4);
+      backdrop-filter:blur(10px); color:#fff; padding:.25rem .75rem;
+      border-radius:999px; font-size:.8125rem; font-weight:600;
+    }
+
+    /* Small cat cards */
+    .categories-small-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+
+    .cat-small-card {
+      display: flex; flex-direction:column; align-items:center; gap:.75rem;
+      padding: 1.75rem 1rem;
+      background: var(--grad-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      transition: all .3s var(--ease-out);
+      cursor:pointer;
+      text-align:center;
+      text-decoration:none;
+      color:inherit;
+    }
+    .cat-small-card:hover {
+      transform:translateY(-4px);
+      border-color:rgba(79,142,247,.3);
+      background:rgba(79,142,247,.05);
+      box-shadow:0 10px 40px rgba(0,0,0,.3);
+    }
+    .cat-small-icon {
+      font-size:2.25rem; width:60px; height:60px;
+      display:flex; align-items:center; justify-content:center;
+      background:var(--color-surface); border-radius:var(--radius-lg);
+      transition:transform .3s var(--ease-spring);
+    }
+    .cat-small-card:hover .cat-small-icon { transform:scale(1.2) rotate(-8deg); }
+    .cat-small-name  { font-weight:600; font-size:.9375rem; }
+    .cat-small-desc  { font-size:.8125rem; color:var(--text-muted); line-height:1.4; }
+
+    @media(max-width:768px){
+      .categories-big-grid { grid-template-columns:1fr; }
+      .categories-small-grid { grid-template-columns:repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Hero ─────────────────────────────────────────────── -->
+<div class="categories-hero">
+  <div class="container">
+    <span class="badge badge-primary" style="margin-bottom:1.5rem;">All Categories</span>
+    <h1 class="display-2">Shop by <span class="gradient-text">Category</span></h1>
+    <p>Find exactly what you're looking for across our curated collections</p>
+  </div>
+</div>
+
+<!-- ── Featured Categories ────────────────────────────── -->
+<section class="section-sm">
+  <div class="container">
+    <div class="section-header-flex reveal">
+      <div>
+        <span class="eyebrow" style="display:block;margin-bottom:.5rem;">Explore</span>
+        <h2 class="heading-1">Featured Collections</h2>
+      </div>
+    </div>
+
+    <div class="categories-big-grid stagger-children" id="big-cats-grid">
+      <!-- Injected by JS -->
+    </div>
+
+    <div class="gradient-divider"></div>
+
+    <div class="section-header-flex reveal" style="margin-bottom:1.5rem;">
+      <h2 class="heading-2">All Categories</h2>
+    </div>
+    <div class="categories-small-grid stagger-children" id="small-cats-grid">
+      <!-- Injected by JS -->
+    </div>
+  </div>
+</section>
+
+<div id="toast-container"></div>
+
+<script type="module">
+  import { renderNavbar } from '/assets/js/navbar.js';
+  import { categoryAPI, productAPI } from '/assets/js/api.js';
+  import { initScrollReveal } from '/assets/js/utils.js';
+
+  renderNavbar();
+
+  // Unsplash images per category slug
+  const CAT_IMAGES = {
+    electronics: 'https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=800',
+    fashion:     'https://images.unsplash.com/photo-1445205170230-053b83016050?w=800',
+    footwear:    'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800',
+    audio:       'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800',
+    wearables:   'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800',
+    accessories: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800',
+  };
+
+  async function loadCategories() {
+    const bigGrid   = document.getElementById('big-cats-grid');
+    const smallGrid = document.getElementById('small-cats-grid');
+
+    try {
+      const { categories } = await categoryAPI.getAll();
+
+      // Big featured cards (first 3)
+      bigGrid.innerHTML = categories.slice(0,3).map((cat, i) => `
+        <a href="/pages/shop.html?category=${cat._id}" class="cat-big-card">
+          <img class="cat-big-card__bg" src="${CAT_IMAGES[cat.slug] || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800'}" alt="${cat.name}" loading="lazy">
+          <div class="cat-big-card__overlay"></div>
+          <div class="cat-big-card__content">
+            <div class="cat-big-card__icon">${cat.icon}</div>
+            <div class="cat-big-card__name">${cat.name}</div>
+            <div class="cat-big-card__count">${cat.description}</div>
+          </div>
+          <span class="cat-big-card__badge">Explore →</span>
+        </a>`).join('');
+
+      // Small cards (all categories)
+      smallGrid.innerHTML = categories.map(cat => `
+        <a href="/pages/shop.html?category=${cat._id}" class="cat-small-card">
+          <div class="cat-small-icon">${cat.icon || '📦'}</div>
+          <div class="cat-small-name">${cat.name}</div>
+          <div class="cat-small-desc">${cat.description}</div>
+        </a>`).join('');
+
+      bigGrid.classList.add('visible');
+      smallGrid.classList.add('visible');
+      initScrollReveal();
+
+    } catch (e) {
+      bigGrid.innerHTML = `<p class="text-muted">Could not load categories: ${e.message}</p>`;
+    }
+  }
+
+  loadCategories();
+</script>
+</body>
+</html>
