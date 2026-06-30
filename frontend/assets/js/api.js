@@ -1,21 +1,23 @@
 /**
  * api.js — Centralized API client for LuxeStore
- * All fetch calls go through this module, which
- * automatically handles auth headers and error parsing.
+ * Automatically handles auth headers, error parsing,
+ * and falls back to demo data when MongoDB is unavailable.
  */
+
+import { DEMO_CATEGORIES, getDemoProducts, DEMO_PRODUCTS } from './demo-data.js';
 
 const API_BASE = '/api';
 
 // ── Token management ──────────────────────────────────────
-export const getToken  = ()        => localStorage.getItem('luxe_token');
-export const setToken  = (token)   => localStorage.setItem('luxe_token', token);
+export const getToken   = ()       => localStorage.getItem('luxe_token');
+export const setToken   = (token)  => localStorage.setItem('luxe_token', token);
 export const removeToken = ()      => localStorage.removeItem('luxe_token');
-export const getUser   = ()        => JSON.parse(localStorage.getItem('luxe_user') || 'null');
-export const setUser   = (user)    => localStorage.setItem('luxe_user', JSON.stringify(user));
+export const getUser    = ()       => JSON.parse(localStorage.getItem('luxe_user') || 'null');
+export const setUser    = (user)   => localStorage.setItem('luxe_user', JSON.stringify(user));
 export const removeUser = ()       => localStorage.removeItem('luxe_user');
 
-export const isLoggedIn  = () => !!getToken();
-export const isAdmin     = () => { const u = getUser(); return u && u.role === 'admin'; };
+export const isLoggedIn = () => !!getToken();
+export const isAdmin    = () => { const u = getUser(); return u && u.role === 'admin'; };
 
 // ── Base fetch wrapper ─────────────────────────────────────
 async function request(endpoint, options = {}) {
@@ -23,7 +25,7 @@ async function request(endpoint, options = {}) {
   const headers = { 'Content-Type': 'application/json', ...options.headers };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
+  const res  = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
@@ -34,14 +36,14 @@ async function request(endpoint, options = {}) {
 
 // ── HTTP helpers ──────────────────────────────────────────
 export const api = {
-  get:    (url)         => request(url),
-  post:   (url, body)   => request(url, { method: 'POST',   body: JSON.stringify(body) }),
-  put:    (url, body)   => request(url, { method: 'PUT',    body: JSON.stringify(body) }),
-  delete: (url)         => request(url, { method: 'DELETE' }),
+  get:    (url)       => request(url),
+  post:   (url, body) => request(url, { method: 'POST',   body: JSON.stringify(body) }),
+  put:    (url, body) => request(url, { method: 'PUT',    body: JSON.stringify(body) }),
+  delete: (url)       => request(url, { method: 'DELETE' }),
 
   // For FormData (image uploads)
   postForm: (url, formData) => {
-    const token = getToken();
+    const token   = getToken();
     const headers = {};
     if (token) headers['Authorization'] = `Bearer ${token}`;
     return fetch(`${API_BASE}${url}`, { method: 'POST', headers, body: formData })
@@ -53,7 +55,7 @@ export const api = {
   },
 
   putForm: (url, formData) => {
-    const token = getToken();
+    const token   = getToken();
     const headers = {};
     if (token) headers['Authorization'] = `Bearer ${token}`;
     return fetch(`${API_BASE}${url}`, { method: 'PUT', headers, body: formData })
@@ -67,43 +69,78 @@ export const api = {
 
 // ── Auth API ──────────────────────────────────────────────
 export const authAPI = {
-  register:       (data)         => api.post('/auth/register', data),
-  login:          (data)         => api.post('/auth/login', data),
-  logout:         ()             => api.post('/auth/logout'),
-  getMe:          ()             => api.get('/auth/me'),
-  updateProfile:  (formData)     => api.putForm('/auth/update-profile', formData),
-  addAddress:     (data)         => api.post('/auth/addresses', data),
-  deleteAddress:  (id)           => api.delete(`/auth/addresses/${id}`),
-  changePassword: (data)         => api.put('/auth/change-password', data),
+  register:       (data)    => api.post('/auth/register', data),
+  login:          (data)    => api.post('/auth/login', data),
+  logout:         ()        => api.post('/auth/logout'),
+  getMe:          ()        => api.get('/auth/me'),
+  updateProfile:  (data)    => api.put('/auth/update-profile', data),
+  addAddress:     (data)    => api.post('/auth/addresses', data),
+  deleteAddress:  (id)      => api.delete(`/auth/addresses/${id}`),
+  changePassword: (data)    => api.put('/auth/change-password', data),
 };
 
-// ── Products API ──────────────────────────────────────────
+// ── Products API (with demo fallback) ─────────────────
+// We catch BOTH network errors AND HTTP 5xx from the server
 export const productAPI = {
-  getAll:    (params = {}) => api.get(`/products?${new URLSearchParams(params)}`),
-  getOne:    (slug)        => api.get(`/products/${slug}`),
-  getRelated:(id)          => api.get(`/products/${id}/related`),
-  create:    (formData)    => api.postForm('/products', formData),
-  update:    (id, formData)=> api.putForm(`/products/${id}`, formData),
-  delete:    (id)          => api.delete(`/products/${id}`),
-  addReview: (id, data)    => api.post(`/products/${id}/reviews`, data),
+  getAll: async (params = {}) => {
+    try {
+      const result = await api.get(`/products?${new URLSearchParams(params)}`);
+      return result;
+    } catch {
+      // Fallback: return demo data when API is unavailable or DB is down
+      console.warn('ProductAPI offline — using demo data');
+      return getDemoProducts(params);
+    }
+  },
+
+  getOne: async (slug) => {
+    try {
+      return await api.get(`/products/${slug}`);
+    } catch {
+      const product = DEMO_PRODUCTS.find(p => p.slug === slug) || DEMO_PRODUCTS[0];
+      return { product, reviews: [] };
+    }
+  },
+
+  getRelated: async (id) => {
+    try {
+      return await api.get(`/products/${id}/related`);
+    } catch {
+      return { products: DEMO_PRODUCTS.filter(p => p._id !== id).slice(0, 4) };
+    }
+  },
+
+  create:    (data)     => api.post('/products', data),
+  update:    (id, data) => api.put(`/products/${id}`, data),
+  delete:    (id)       => api.delete(`/products/${id}`),
+  addReview: (id, data) => api.post(`/products/${id}/reviews`, data),
 };
 
-// ── Categories API ─────────────────────────────────────────
+// ── Categories API (with demo fallback) ────────────────
 export const categoryAPI = {
-  getAll:  ()             => api.get('/categories'),
-  getOne:  (slug)         => api.get(`/categories/${slug}`),
-  create:  (formData)     => api.postForm('/categories', formData),
-  update:  (id, formData) => api.putForm(`/categories/${id}`, formData),
-  delete:  (id)           => api.delete(`/categories/${id}`),
+  getAll: async () => {
+    try {
+      const result = await api.get('/categories');
+      return result;
+    } catch {
+      console.warn('CategoryAPI offline — using demo data');
+      return { categories: DEMO_CATEGORIES };
+    }
+  },
+
+  getOne:  (slug)     => api.get(`/categories/${slug}`),
+  create:  (data)       => api.post('/categories', data),
+  update:  (id, data)   => api.put(`/categories/${id}`, data),
+  delete:  (id)         => api.delete(`/categories/${id}`),
 };
 
 // ── Cart API ───────────────────────────────────────────────
 export const cartAPI = {
-  get:     ()                           => api.get('/cart'),
-  add:     (productId, quantity = 1)    => api.post('/cart/add', { productId, quantity }),
-  update:  (productId, quantity)        => api.put('/cart/update', { productId, quantity }),
-  remove:  (productId)                  => api.delete(`/cart/remove/${productId}`),
-  clear:   ()                           => api.delete('/cart/clear'),
+  get:    ()                        => api.get('/cart'),
+  add:    (productId, quantity = 1) => api.post('/cart/add', { productId, quantity }),
+  update: (productId, quantity)     => api.put('/cart/update', { productId, quantity }),
+  remove: (productId)               => api.delete(`/cart/remove/${productId}`),
+  clear:  ()                        => api.delete('/cart/clear'),
 };
 
 // ── Wishlist API ───────────────────────────────────────────
@@ -114,10 +151,10 @@ export const wishlistAPI = {
 
 // ── Orders API ─────────────────────────────────────────────
 export const orderAPI = {
-  place:       (data)   => api.post('/orders', data),
-  getMyOrders: ()       => api.get('/orders/my-orders'),
-  getOne:      (id)     => api.get(`/orders/${id}`),
-  getAll:      (params) => api.get(`/orders?${new URLSearchParams(params || {})}`),
+  place:       (data)     => api.post('/orders', data),
+  getMyOrders: ()         => api.get('/orders/my-orders'),
+  getOne:      (id)       => api.get(`/orders/${id}`),
+  getAll:      (params)   => api.get(`/orders?${new URLSearchParams(params || {})}`),
   updateStatus:(id, data) => api.put(`/orders/${id}/status`, data),
 };
 
@@ -128,8 +165,8 @@ export const paymentAPI = {
 
 // ── Admin API ──────────────────────────────────────────────
 export const adminAPI = {
-  getAnalytics: () => api.get('/admin/analytics'),
-  getUsers:     (params) => api.get(`/admin/users?${new URLSearchParams(params || {})}`),
-  updateUser:   (id, data) => api.put(`/admin/users/${id}`, data),
-  deleteUser:   (id)       => api.delete(`/admin/users/${id}`),
+  getAnalytics: ()          => api.get('/admin/analytics'),
+  getUsers:     (params)    => api.get(`/admin/users?${new URLSearchParams(params || {})}`),
+  updateUser:   (id, data)  => api.put(`/admin/users/${id}`, data),
+  deleteUser:   (id)        => api.delete(`/admin/users/${id}`),
 };
