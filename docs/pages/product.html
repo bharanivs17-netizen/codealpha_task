@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Product — LuxeStore</title>
   <meta name="description" content="View product details, specifications, reviews, and more at LuxeStore.">
-  <link rel="stylesheet" href="/assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/global.css">
   <style>
     .product-page { padding-top:calc(var(--nav-height)+2rem); padding-bottom:4rem; }
 
@@ -201,14 +201,14 @@
 <div id="toast-container"></div>
 
 <script type="module">
-  import { renderNavbar } from '/assets/js/navbar.js';
-  import { productAPI, cartAPI, wishlistAPI, isLoggedIn } from '/assets/js/api.js';
-  import { toast, starsHTML, formatPrice, formatDate, productCardHTML, updateCartBadge, initScrollReveal } from '/assets/js/utils.js';
+  import { renderNavbar } from '../assets/js/navbar.js';
+  import { productAPI, cartAPI, wishlistAPI, isLoggedIn } from '../assets/js/api.js';
+  import { toast, starsHTML, formatPrice, formatDate, productCardHTML, updateCartBadge, initScrollReveal } from '../assets/js/utils.js';
 
   renderNavbar();
 
   const slug  = new URLSearchParams(window.location.search).get('slug');
-  if (!slug) { window.location.href = '/pages/shop.html'; }
+  if (!slug) { window.location.href='../pages/shop.html'; }
 
   let product, reviews, selectedRating = 0;
   let currentQty = 1;
@@ -255,7 +255,7 @@
           <div style="font-size:3rem;">😕</div>
           <h2 class="heading-2 mt-lg">Product not found</h2>
           <p class="text-muted mt-md">${e.message}</p>
-          <a href="/pages/shop.html" class="btn btn-primary mt-lg">Back to Shop</a>
+          <a href="../pages/shop.html" class="btn btn-primary mt-lg">Back to Shop</a>
         </div>`;
     }
   }
@@ -274,9 +274,9 @@
 
     document.getElementById('product-content').innerHTML = `
       <nav class="breadcrumb">
-        <a href="/index.html">Home</a> / 
-        <a href="/pages/shop.html">Shop</a> / 
-        ${product.category?.name ? `<a href="/pages/shop.html?category=${product.category._id}">${product.category.name}</a> / ` : ''}
+        <a href="../index.html">Home</a> / 
+        <a href="../pages/shop.html">Shop</a> / 
+        ${product.category?.name ? `<a href="../pages/shop.html?category=${product.category._id}">${product.category.name}</a> / ` : ''}
         <span>${product.name}</span>
       </nav>
 
@@ -376,7 +376,7 @@
 
     // Add to cart
     document.getElementById('add-to-cart-btn').addEventListener('click', async () => {
-      if (!isLoggedIn()) { toast.warning('Please login to add to cart'); window.location.href='/pages/login.html'; return; }
+      if (!isLoggedIn()) { toast.warning('Please login to add to cart'); window.location.href='../pages/login.html'; return; }
       const btn = document.getElementById('add-to-cart-btn');
       btn.disabled = true; btn.textContent = 'Adding…';
       try {
@@ -391,7 +391,7 @@
     const wBtn = document.getElementById('wishlist-action-btn');
     updateWishlistBtn(wBtn);
     wBtn.addEventListener('click', async () => {
-      if (!isLoggedIn()) { toast.warning('Please login'); window.location.href='/pages/login.html'; return; }
+      if (!isLoggedIn()) { toast.warning('Please login'); window.location.href='../pages/login.html'; return; }
       try {
         const { added } = await wishlistAPI.toggle(product._id);
         if (added) wishlistIds.push(product._id);
@@ -516,7 +516,7 @@
   }
 
   async function submitReview() {
-    if (!isLoggedIn()) { toast.warning('Please login to submit a review'); window.location.href='/pages/login.html'; return; }
+    if (!isLoggedIn()) { toast.warning('Please login to submit a review'); window.location.href='../pages/login.html'; return; }
     if (!selectedRating) { toast.error('Please select a rating'); return; }
     const comment = document.getElementById('review-comment').value.trim();
     if (!comment) { toast.error('Please write a comment'); return; }

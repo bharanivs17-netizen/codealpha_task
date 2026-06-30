@@ -24,17 +24,17 @@ export function renderNavbar() {
             <div style="color:var(--text-muted);font-size:.8rem;">${user?.email}</div>
           </div>
           <div class="navbar__dropdown-divider"></div>
-          <a href="/pages/dashboard.html" class="navbar__dropdown-item">👤 My Account</a>
-          <a href="/pages/dashboard.html#orders" class="navbar__dropdown-item">📦 My Orders</a>
-          <a href="/pages/dashboard.html#wishlist" class="navbar__dropdown-item">❤️ Wishlist</a>
+          <a href="..../pages/dashboard.html" class="navbar__dropdown-item">👤 My Account</a>
+          <a href="..../pages/dashboard.html#orders" class="navbar__dropdown-item">📦 My Orders</a>
+          <a href="..../pages/dashboard.html#wishlist" class="navbar__dropdown-item">❤️ Wishlist</a>
           ${admin ? `<div class="navbar__dropdown-divider"></div>
-          <a href="/pages/admin.html" class="navbar__dropdown-item" style="color:var(--color-primary);">⚙️ Admin Panel</a>` : ''}
+          <a href="..../pages/admin.html" class="navbar__dropdown-item" style="color:var(--color-primary);">⚙️ Admin Panel</a>` : ''}
           <div class="navbar__dropdown-divider"></div>
           <button class="navbar__dropdown-item" id="logout-btn" style="width:100%;color:var(--color-red);">🚪 Logout</button>
         </div>
       </div>`
-    : `<a href="/pages/login.html"    class="btn btn-secondary btn-sm">Login</a>
-       <a href="/pages/register.html" class="btn btn-primary  btn-sm">Sign Up</a>`;
+    : `<a href="..../pages/login.html"    class="btn btn-secondary btn-sm">Login</a>
+       <a href="..../pages/register.html" class="btn btn-primary  btn-sm">Sign Up</a>`;
 
   const navHTML = `
     <nav class="navbar" id="navbar">
@@ -43,8 +43,8 @@ export function renderNavbar() {
 
         <div class="navbar__nav">
           <a href="/index.html"             class="navbar__link">Home</a>
-          <a href="/pages/shop.html"        class="navbar__link">Shop</a>
-          <a href="/pages/categories.html"  class="navbar__link">Categories</a>
+          <a href="..../pages/shop.html"        class="navbar__link">Shop</a>
+          <a href="..../pages/categories.html"  class="navbar__link">Categories</a>
         </div>
 
         <div class="navbar__search">
@@ -53,7 +53,7 @@ export function renderNavbar() {
         </div>
 
         <div class="navbar__actions">
-          <a href="/pages/cart.html" class="navbar__icon-btn" title="Cart" id="cart-btn">
+          <a href="..../pages/cart.html" class="navbar__icon-btn" title="Cart" id="cart-btn">
             🛒
             <span class="navbar__cart-badge" id="cart-badge" style="display:none;">0</span>
           </a>
@@ -65,12 +65,12 @@ export function renderNavbar() {
       <!-- Mobile Menu -->
       <div id="mobile-menu" style="display:none; padding:1rem; border-top:1px solid var(--color-border); background:rgba(5,10,24,0.98);">
         <a href="/index.html"             class="navbar__link" style="display:block; padding:.75rem 1rem;">Home</a>
-        <a href="/pages/shop.html"        class="navbar__link" style="display:block; padding:.75rem 1rem;">Shop</a>
-        <a href="/pages/categories.html"  class="navbar__link" style="display:block; padding:.75rem 1rem;">Categories</a>
+        <a href="..../pages/shop.html"        class="navbar__link" style="display:block; padding:.75rem 1rem;">Shop</a>
+        <a href="..../pages/categories.html"  class="navbar__link" style="display:block; padding:.75rem 1rem;">Categories</a>
         ${loggedIn
-          ? `<a href="/pages/dashboard.html" class="navbar__link" style="display:block; padding:.75rem 1rem;">My Account</a>`
-          : `<a href="/pages/login.html"    class="navbar__link" style="display:block; padding:.75rem 1rem;">Login</a>
-             <a href="/pages/register.html" class="navbar__link" style="display:block; padding:.75rem 1rem;">Sign Up</a>`}
+          ? `<a href="..../pages/dashboard.html" class="navbar__link" style="display:block; padding:.75rem 1rem;">My Account</a>`
+          : `<a href="..../pages/login.html"    class="navbar__link" style="display:block; padding:.75rem 1rem;">Login</a>
+             <a href="..../pages/register.html" class="navbar__link" style="display:block; padding:.75rem 1rem;">Sign Up</a>`}
       </div>
     </nav>`;
 

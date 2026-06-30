@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LuxeStore — Premium E-Commerce Experience</title>
   <meta name="description" content="Discover premium electronics, fashion, footwear, and accessories at LuxeStore. Apple meets Amazon meets Nike in one stunning store.">
-  <link rel="stylesheet" href="/assets/css/global.css">
+  <link rel="stylesheet" href="./assets/css/global.css">
   <style>
     /* ── Hero ── */
     .hero { min-height: 100vh; }
@@ -108,10 +108,10 @@
           Free shipping on orders over $100. Easy 30-day returns.
         </p>
         <div class="hero__ctas">
-          <a href="/pages/shop.html" class="btn btn-primary btn-lg">
+          <a href="./pages/shop.html" class="btn btn-primary btn-lg">
             🛍️ Shop Now
           </a>
-          <a href="/pages/categories.html" class="btn btn-secondary btn-lg">
+          <a href="./pages/categories.html" class="btn btn-secondary btn-lg">
             Browse Categories
           </a>
         </div>
@@ -189,7 +189,7 @@
         <span class="eyebrow" style="display:block;margin-bottom:.5rem;">Handpicked</span>
         <h2 class="heading-1">Featured Products</h2>
       </div>
-      <a href="/pages/shop.html?featured=true" class="btn btn-secondary">View All →</a>
+      <a href="./pages/shop.html?featured=true" class="btn btn-secondary">View All →</a>
     </div>
     <div class="product-grid" id="featured-products">
       <!-- Injected by JS -->
@@ -227,7 +227,7 @@
         <span class="eyebrow" style="display:block;margin-bottom:.5rem;">Just Dropped</span>
         <h2 class="heading-1">New Arrivals</h2>
       </div>
-      <a href="/pages/shop.html?sort=newest" class="btn btn-secondary">See All New →</a>
+      <a href="./pages/shop.html?sort=newest" class="btn btn-secondary">See All New →</a>
     </div>
     <div class="product-grid" id="new-arrivals">
       <!-- Injected by JS -->
@@ -249,7 +249,7 @@
           Free shipping on every order this weekend only.
         </p>
         <div style="margin-top:1.5rem;">
-          <a href="/pages/shop.html" class="btn btn-primary btn-lg">Shop the Sale →</a>
+          <a href="./pages/shop.html" class="btn btn-primary btn-lg">Shop the Sale →</a>
         </div>
       </div>
       <div style="font-size:6rem;opacity:.5;text-align:center;">🛍️</div>
@@ -265,7 +265,7 @@
         <span class="eyebrow" style="display:block;margin-bottom:.5rem;">Top Picks</span>
         <h2 class="heading-1">Best Sellers</h2>
       </div>
-      <a href="/pages/shop.html?sort=popular" class="btn btn-secondary">All Best Sellers →</a>
+      <a href="./pages/shop.html?sort=popular" class="btn btn-secondary">All Best Sellers →</a>
     </div>
     <div class="product-grid" id="best-sellers">
       <!-- Injected by JS -->
@@ -293,21 +293,21 @@
       <div>
         <div class="footer__col-title">Shop</div>
         <div class="footer__links">
-          <a href="/pages/shop.html"       class="footer__link">All Products</a>
-          <a href="/pages/categories.html" class="footer__link">Categories</a>
-          <a href="/pages/shop.html?featured=true" class="footer__link">Featured</a>
-          <a href="/pages/shop.html?sort=popular"  class="footer__link">Best Sellers</a>
-          <a href="/pages/shop.html?sort=newest"   class="footer__link">New Arrivals</a>
+          <a href="./pages/shop.html"       class="footer__link">All Products</a>
+          <a href="./pages/categories.html" class="footer__link">Categories</a>
+          <a href="./pages/shop.html?featured=true" class="footer__link">Featured</a>
+          <a href="./pages/shop.html?sort=popular"  class="footer__link">Best Sellers</a>
+          <a href="./pages/shop.html?sort=newest"   class="footer__link">New Arrivals</a>
         </div>
       </div>
       <div>
         <div class="footer__col-title">Account</div>
         <div class="footer__links">
-          <a href="/pages/login.html"     class="footer__link">Login</a>
-          <a href="/pages/register.html"  class="footer__link">Register</a>
-          <a href="/pages/dashboard.html" class="footer__link">My Dashboard</a>
-          <a href="/pages/dashboard.html#orders"   class="footer__link">My Orders</a>
-          <a href="/pages/dashboard.html#wishlist" class="footer__link">Wishlist</a>
+          <a href="./pages/login.html"     class="footer__link">Login</a>
+          <a href="./pages/register.html"  class="footer__link">Register</a>
+          <a href="./pages/dashboard.html" class="footer__link">My Dashboard</a>
+          <a href="./pages/dashboard.html#orders"   class="footer__link">My Orders</a>
+          <a href="./pages/dashboard.html#wishlist" class="footer__link">Wishlist</a>
         </div>
       </div>
       <div>
@@ -332,9 +332,9 @@
 <div id="toast-container"></div>
 
 <script type="module">
-  import { renderNavbar } from '/assets/js/navbar.js';
-  import { productAPI, categoryAPI, wishlistAPI, cartAPI, isLoggedIn, getUser } from '/assets/js/api.js';
-  import { toast, productCardHTML, showSkeletons, initScrollReveal, updateCartBadge } from '/assets/js/utils.js';
+  import { renderNavbar } from './assets/js/navbar.js';
+  import { productAPI, categoryAPI, wishlistAPI, cartAPI, isLoggedIn, getUser } from './assets/js/api.js';
+  import { toast, productCardHTML, showSkeletons, initScrollReveal, updateCartBadge } from './assets/js/utils.js';
 
   renderNavbar();
 
@@ -344,7 +344,7 @@
     try {
       const { categories } = await categoryAPI.getAll();
       grid.innerHTML = categories.slice(0, 6).map(cat => `
-        <a href="/pages/shop.html?category=${cat._id}" class="category-card">
+        <a href="./pages/shop.html?category=${cat._id}" class="category-card">
           <div class="category-card__icon">${cat.icon || '📦'}</div>
           <div class="category-card__name">${cat.name}</div>
           <div class="category-card__count">${cat.description}</div>
@@ -382,7 +382,7 @@
   function attachCardEvents(container) {
     container.querySelectorAll('.add-to-cart-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
-        if (!isLoggedIn()) { toast.warning('Please login to add to cart'); window.location.href='/pages/login.html'; return; }
+        if (!isLoggedIn()) { toast.warning('Please login to add to cart'); window.location.href='./pages/login.html'; return; }
         const id = btn.dataset.id;
         btn.disabled = true; btn.textContent = 'Adding…';
         try {
@@ -396,7 +396,7 @@
 
     container.querySelectorAll('.wishlist-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
-        if (!isLoggedIn()) { toast.warning('Please login'); window.location.href='/pages/login.html'; return; }
+        if (!isLoggedIn()) { toast.warning('Please login'); window.location.href='./pages/login.html'; return; }
         const id = btn.dataset.id;
         try {
           const { added } = await wishlistAPI.toggle(id);

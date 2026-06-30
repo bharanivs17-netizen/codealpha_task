@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard — LuxeStore</title>
-  <link rel="stylesheet" href="/assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/global.css">
   <style>
     .admin-page { padding: calc(var(--nav-height) + 2rem) 0 4rem; }
     .admin-layout { display: grid; grid-template-columns: 240px 1fr; gap: 2rem; align-items: start; }
@@ -358,16 +358,16 @@
 <div id="toast-container"></div>
 
 <script type="module">
-  import { renderNavbar } from '/assets/js/navbar.js';
-  import { adminAPI, productAPI, categoryAPI, orderAPI, isAdmin } from '/assets/js/api.js';
-  import { toast, formatPrice, formatDate, orderStatusBadge } from '/assets/js/utils.js';
+  import { renderNavbar } from '../assets/js/navbar.js';
+  import { adminAPI, productAPI, categoryAPI, orderAPI, isAdmin } from '../assets/js/api.js';
+  import { toast, formatPrice, formatDate, orderStatusBadge } from '../assets/js/utils.js';
 
   renderNavbar();
 
   // Route protection - admin only
   if (!isAdmin()) {
     toast.error('Access Denied: Admins Only');
-    setTimeout(() => window.location.href = '/index.html', 1500);
+    setTimeout(() => window.location.href='../index.html', 1500);
   }
 
   // Admin menu panel switching
