@@ -1,6 +1,6 @@
 /**
  * demo-data.js — Fallback demo data for offline/no-DB mode
- * Used when the API is unavailable (MongoDB not connected)
+ * Prices in Indian Rupees (INR) — realistic Indian market prices
  */
 
 export const DEMO_CATEGORIES = [
@@ -19,9 +19,9 @@ export const DEMO_PRODUCTS = [
     slug: 'macbook-pro-16',
     shortDesc: 'M3 Pro chip, Liquid Retina XDR display',
     description: 'The most powerful MacBook Pro ever. With M3 Pro chip, up to 18 hours of battery life, and a stunning Liquid Retina XDR display.',
-    price: 2499,
+    price: 279900,
     discount: 10,
-    finalPrice: 2249,
+    finalPrice: 249900,
     stock: 15,
     brand: 'Apple',
     category: { _id: 'cat1', name: 'Electronics' },
@@ -39,14 +39,14 @@ export const DEMO_PRODUCTS = [
     slug: 'iphone-15-pro-max',
     shortDesc: 'Titanium design, A17 Pro chip, 48MP camera',
     description: 'The most advanced iPhone ever. Forged in titanium with A17 Pro chip and the most capable iPhone camera system ever.',
-    price: 1199,
+    price: 179900,
     discount: 0,
-    finalPrice: 1199,
+    finalPrice: 179900,
     stock: 30,
     brand: 'Apple',
     category: { _id: 'cat1', name: 'Electronics' },
-    thumbnail: 'https://images.unsplash.com/photo-1695048133142-1a20484bce71?w=600&q=80',
-    images: ['https://images.unsplash.com/photo-1695048133142-1a20484bce71?w=600&q=80'],
+    thumbnail: 'https://images.unsplash.com/photo-1632661674596-df8be070a5c5?w=600&q=80',
+    images: ['https://images.unsplash.com/photo-1632661674596-df8be070a5c5?w=600&q=80'],
     averageRating: 4.8,
     numReviews: 256,
     isFeatured: true,
@@ -59,9 +59,9 @@ export const DEMO_PRODUCTS = [
     slug: 'sony-wh-1000xm5',
     shortDesc: 'Industry-leading noise cancellation headphones',
     description: 'The best noise cancelling headphones with exceptional sound quality, 30-hour battery life, and crystal-clear hands-free calling.',
-    price: 399,
+    price: 34990,
     discount: 15,
-    finalPrice: 339,
+    finalPrice: 29990,
     stock: 45,
     brand: 'Sony',
     category: { _id: 'cat4', name: 'Audio' },
@@ -79,9 +79,9 @@ export const DEMO_PRODUCTS = [
     slug: 'nike-air-jordan-1-retro',
     shortDesc: 'Classic silhouette, premium leather upper',
     description: 'The shoe that started it all. The Air Jordan 1 Retro High OG features premium leather and the original colour-blocking.',
-    price: 180,
+    price: 15995,
     discount: 0,
-    finalPrice: 180,
+    finalPrice: 15995,
     stock: 60,
     brand: 'Nike',
     category: { _id: 'cat3', name: 'Footwear' },
@@ -99,9 +99,9 @@ export const DEMO_PRODUCTS = [
     slug: 'apple-watch-ultra-2',
     shortDesc: 'Titanium case, dual-frequency GPS, 60hr battery',
     description: 'The most rugged and capable Apple Watch ever. Designed for athletes and adventurers with dual-frequency GPS and 60-hour battery.',
-    price: 799,
+    price: 89900,
     discount: 0,
-    finalPrice: 799,
+    finalPrice: 89900,
     stock: 20,
     brand: 'Apple',
     category: { _id: 'cat5', name: 'Wearables' },
@@ -119,9 +119,9 @@ export const DEMO_PRODUCTS = [
     slug: 'samsung-galaxy-s24-ultra',
     shortDesc: '200MP camera, built-in S Pen, AI features',
     description: 'The ultimate Android experience with a 200MP camera, integrated S Pen, and Galaxy AI for next-level productivity.',
-    price: 1299,
+    price: 149999,
     discount: 8,
-    finalPrice: 1195,
+    finalPrice: 134999,
     stock: 25,
     brand: 'Samsung',
     category: { _id: 'cat1', name: 'Electronics' },
@@ -139,9 +139,9 @@ export const DEMO_PRODUCTS = [
     slug: 'adidas-ultraboost-23',
     shortDesc: 'Responsive BOOST cushioning, Primeknit upper',
     description: 'Experience incredible energy return with every stride. The Ultraboost 23 features responsive BOOST midsole and a flexible Primeknit upper.',
-    price: 190,
+    price: 19999,
     discount: 20,
-    finalPrice: 152,
+    finalPrice: 15999,
     stock: 80,
     brand: 'Adidas',
     category: { _id: 'cat3', name: 'Footwear' },
@@ -159,9 +159,9 @@ export const DEMO_PRODUCTS = [
     slug: 'lv-neverfull-mm',
     shortDesc: 'Iconic canvas tote bag, roomy and stylish',
     description: 'The Neverfull MM is a spacious and adaptable tote bag crafted from Monogram canvas with a customisable silhouette.',
-    price: 1700,
+    price: 230000,
     discount: 0,
-    finalPrice: 1700,
+    finalPrice: 230000,
     stock: 8,
     brand: 'Louis Vuitton',
     category: { _id: 'cat6', name: 'Accessories' },
@@ -188,10 +188,10 @@ export function getDemoProducts({ sort = 'newest', limit = 8, featured, keyword,
     p.tags.some(t => t.includes(keyword.toLowerCase()))
   );
 
-  if (sort === 'price-asc')  products.sort((a,b) => a.finalPrice - b.finalPrice);
-  if (sort === 'price-desc') products.sort((a,b) => b.finalPrice - a.finalPrice);
-  if (sort === 'rating')     products.sort((a,b) => b.averageRating - a.averageRating);
-  if (sort === 'popular')    products.sort((a,b) => b.numReviews - a.numReviews);
+  if (sort === 'price-asc')  products.sort((a, b) => a.finalPrice - b.finalPrice);
+  if (sort === 'price-desc') products.sort((a, b) => b.finalPrice - a.finalPrice);
+  if (sort === 'rating')     products.sort((a, b) => b.averageRating - a.averageRating);
+  if (sort === 'popular')    products.sort((a, b) => b.numReviews - a.numReviews);
 
   return {
     products: products.slice(0, Number(limit)),

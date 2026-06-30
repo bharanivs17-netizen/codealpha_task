@@ -56,7 +56,7 @@ export const toast = {
 
 // ── Formatting ─────────────────────────────────────────────
 export const formatPrice = (price) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
+  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
 
 export const formatDate = (dateStr) =>
   new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
