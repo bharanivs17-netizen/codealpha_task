@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — LuxeStore</title>
+  <link rel="stylesheet" href="/assets/css/global.css">
+  <style>
+    .admin-page { padding: calc(var(--nav-height) + 2rem) 0 4rem; }
+    .admin-layout { display: grid; grid-template-columns: 240px 1fr; gap: 2rem; align-items: start; }
+    
+    .admin-sidebar {
+      background: var(--grad-card); border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl); padding: 1.5rem 1rem;
+      position: sticky; top: calc(var(--nav-height) + 1rem);
+    }
+    .admin-menu-btn {
+      width: 100%; display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.75rem 1rem; border-radius: var(--radius-md); font-weight: 500;
+      color: var(--text-secondary); transition: all 0.2s; text-align: left;
+    }
+    .admin-menu-btn:hover, .admin-menu-btn.active {
+      color: var(--text-primary); background: var(--color-surface-2);
+    }
+    .admin-menu-btn.active { border-left: 3px solid var(--color-primary); border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+
+    .stat-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card {
+      background: var(--grad-card); border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl); padding: 1.5rem; text-align: center;
+    }
+    .stat-num { font-family: var(--font-display); font-size: 2rem; font-weight: 800; margin-top: 0.5rem; }
+
+    .admin-card {
+      background: var(--grad-card); border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl); padding: 1.5rem; margin-bottom: 1.5rem;
+    }
+
+    .admin-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .admin-table th { padding: 0.875rem 1rem; border-bottom: 2px solid var(--color-border); color: var(--text-secondary); font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .admin-table td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--color-border); font-size: 0.875rem; vertical-align: middle; }
+    .admin-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    .tbl-img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; }
+    
+    @media (max-width: 900px) {
+      .admin-layout { grid-template-columns: 1fr; }
+      .admin-sidebar { position: static; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="admin-page">
+  <div class="container">
+    <div class="admin-layout">
+      <!-- Admin Sidebar -->
+      <aside class="admin-sidebar">
+        <div style="padding: 0 1rem 1.5rem; border-bottom: 1px solid var(--color-border); margin-bottom: 1.5rem;">
+          <h2 class="heading-2 gradient-text">LuxeAdmin</h2>
+          <span class="text-xs text-muted">Management Console</span>
+        </div>
+        <nav style="display: flex; flex-direction: column; gap: 0.25rem;">
+          <button class="admin-menu-btn active" data-target="analytics-panel">📊 Dashboard & Stats</button>
+          <button class="admin-menu-btn" data-target="products-panel">📦 Product Inventory</button>
+          <button class="admin-menu-btn" data-target="categories-panel">📂 Categories CRUD</button>
+          <button class="admin-menu-btn" data-target="orders-panel">🛒 Order Management</button>
+          <button class="admin-menu-btn" data-target="users-panel">👥 User Management</button>
+        </nav>
+      </aside>
+
+      <!-- Admin Main Content Panels -->
+      <main>
+        <!-- Panel 1: Analytics -->
+        <section class="admin-panel active" id="analytics-panel">
+          <div class="stat-card-grid" id="stats-grid">
+            <div class="stat-card">
+              <span class="text-muted text-xs font-bold uppercase">Total Revenue</span>
+              <div class="stat-num gradient-text-gold" id="stat-revenue">$0.00</div>
+            </div>
+            <div class="stat-card">
+              <span class="text-muted text-xs font-bold uppercase">Total Orders</span>
+              <div class="stat-num" id="stat-orders">0</div>
+            </div>
+            <div class="stat-card">
+              <span class="text-muted text-xs font-bold uppercase">Total Products</span>
+              <div class="stat-num" id="stat-products">0</div>
+            </div>
+            <div class="stat-card">
+              <span class="text-muted text-xs font-bold uppercase">Customers</span>
+              <div class="stat-num" id="stat-users">0</div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="admin-card">
+              <h3 class="heading-3 mb-md">Top Selling Products</h3>
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Sold</th>
+                    <th>Price</th>
+                  </tr>
+                </thead>
+                <tbody id="top-products-tbody"></tbody>
+              </table>
+            </div>
+
+            <div class="admin-card">
+              <h3 class="heading-3 mb-md">Recent Orders</h3>
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Order #</th>
+                    <th>User</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-orders-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Panel 2: Products CRUD -->
+        <section class="admin-panel" id="products-panel">
+          <div class="admin-card">
+            <div class="flex-between mb-md">
+              <h3 class="heading-2">Product Inventory</h3>
+              <button class="btn btn-primary btn-sm" id="admin-add-product-btn">Add New Product</button>
+            </div>
+            <div style="overflow-x: auto;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Image</th>
+                    <th>SKU</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-products-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Panel 3: Categories CRUD -->
+        <section class="admin-panel" id="categories-panel">
+          <div class="admin-card">
+            <div class="flex-between mb-md">
+              <h3 class="heading-2">Categories List</h3>
+              <button class="btn btn-primary btn-sm" id="admin-add-category-btn">Add New Category</button>
+            </div>
+            <div style="overflow-x: auto;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Icon</th>
+                    <th>Category Name</th>
+                    <th>Slug</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-categories-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Panel 4: Order Management -->
+        <section class="admin-panel" id="orders-panel">
+          <div class="admin-card">
+            <h3 class="heading-2 mb-md">Order Manager</h3>
+            <div style="overflow-x: auto;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Order #</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-orders-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Panel 5: User Management -->
+        <section class="admin-panel" id="users-panel">
+          <div class="admin-card">
+            <h3 class="heading-2 mb-md">System Users</h3>
+            <div style="overflow-x: auto;">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-users-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add/Edit Product -->
+<div class="modal-overlay" id="product-modal">
+  <div class="modal">
+    <div class="modal__header">
+      <h3 class="heading-2" id="product-modal-title">Add New Product</h3>
+      <button class="modal__close" id="close-product-modal">✕</button>
+    </div>
+    <form id="product-form" style="display: flex; flex-direction: column; gap: 1rem;">
+      <input type="hidden" id="form-product-id">
+      <div class="form-group">
+        <label class="form-label">Product Name *</label>
+        <input type="text" class="form-input" id="form-p-name" required>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">SKU *</label>
+          <input type="text" class="form-input" id="form-p-sku" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Brand</label>
+          <input type="text" class="form-input" id="form-p-brand">
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="form-group">
+          <label class="form-label">Base Price ($) *</label>
+          <input type="number" class="form-input" id="form-p-price" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Discount (%)</label>
+          <input type="number" class="form-input" id="form-p-discount" value="0" min="0" max="100">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Stock Qty *</label>
+          <input type="number" class="form-input" id="form-p-stock" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Category *</label>
+        <select class="form-input" id="form-p-category" required></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Short Description *</label>
+        <input type="text" class="form-input" id="form-p-shortdesc" required placeholder="Display summary list item desc">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Full Description *</label>
+        <textarea class="form-input" id="form-p-desc" rows="4" required></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Thumbnail Image URL *</label>
+        <input type="text" class="form-input" id="form-p-thumb" required placeholder="Image link starting with http/https">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Key Features (JSON Array, e.g. ["Feature 1", "Feature 2"])</label>
+        <input type="text" class="form-input" id="form-p-features" placeholder='["Feature 1", "Feature 2"]'>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tags (JSON Array, e.g. ["nike", "sneakers"])</label>
+        <input type="text" class="form-input" id="form-p-tags" placeholder='["electronics", "laptop"]'>
+      </div>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <input type="checkbox" id="form-p-featured">
+        <label for="form-p-featured" class="form-label" style="margin: 0; cursor: pointer;">Featured Product</label>
+      </div>
+      <button type="submit" class="btn btn-primary" id="save-product-btn">Save Product</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Add/Edit Category -->
+<div class="modal-overlay" id="category-modal">
+  <div class="modal">
+    <div class="modal__header">
+      <h3 class="heading-2" id="category-modal-title">Add Category</h3>
+      <button class="modal__close" id="close-category-modal">✕</button>
+    </div>
+    <form id="category-form" style="display: flex; flex-direction: column; gap: 1rem;">
+      <input type="hidden" id="form-cat-id">
+      <div class="form-group">
+        <label class="form-label">Category Name *</label>
+        <input type="text" class="form-input" id="form-c-name" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Slug * (Lowercase URL slug)</label>
+        <input type="text" class="form-input" id="form-c-slug" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Icon Emoji *</label>
+        <input type="text" class="form-input" id="form-c-icon" placeholder="🖥️" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <input type="text" class="form-input" id="form-c-desc">
+      </div>
+      <button type="submit" class="btn btn-primary" id="save-category-btn">Save Category</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Update Order Status -->
+<div class="modal-overlay" id="order-modal">
+  <div class="modal">
+    <div class="modal__header">
+      <h3 class="heading-2">Manage Order</h3>
+      <button class="modal__close" id="close-order-modal">✕</button>
+    </div>
+    <form id="order-form" style="display: flex; flex-direction: column; gap: 1.25rem;">
+      <input type="hidden" id="form-order-id">
+      <div class="form-group">
+        <label class="form-label">Order Number</label>
+        <input type="text" class="form-input" id="form-o-number" disabled>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fulfillment Status</label>
+        <select class="form-input" id="form-o-status">
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="processing">Processing</option>
+          <option value="shipped">Shipped</option>
+          <option value="delivered">Delivered</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tracking Number</label>
+        <input type="text" class="form-input" id="form-o-tracking" placeholder="Enter courier tracking ID">
+      </div>
+      <button type="submit" class="btn btn-primary">Update Status</button>
+    </form>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+  import { renderNavbar } from '/assets/js/navbar.js';
+  import { adminAPI, productAPI, categoryAPI, orderAPI, isAdmin } from '/assets/js/api.js';
+  import { toast, formatPrice, formatDate, orderStatusBadge } from '/assets/js/utils.js';
+
+  renderNavbar();
+
+  // Route protection - admin only
+  if (!isAdmin()) {
+    toast.error('Access Denied: Admins Only');
+    setTimeout(() => window.location.href = '/index.html', 1500);
+  }
+
+  // Admin menu panel switching
+  const menuBtns = document.querySelectorAll('.admin-menu-btn');
+  menuBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.admin-menu-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.target).classList.add('active');
+    });
+  });
+
+  // Dynamic state caches
+  let categories = [];
+  let products = [];
+  let orders = [];
+  let users = [];
+
+  // Init Data Load
+  async function initAdmin() {
+    await loadCategories(); // Load categories first as product creation requires them
+    await loadAnalytics();
+    await loadProducts();
+    await loadOrders();
+    await loadUsers();
+  }
+
+  // Load dashboard stats & analytics
+  async function loadAnalytics() {
+    try {
+      const res = await adminAPI.getAnalytics();
+      if (res.success) {
+        document.getElementById('stat-revenue').textContent = formatPrice(res.summary.totalRevenue);
+        document.getElementById('stat-orders').textContent = res.summary.totalOrders;
+        document.getElementById('stat-products').textContent = res.summary.totalProducts;
+        document.getElementById('stat-users').textContent = res.summary.totalUsers;
+
+        // Top Selling Table
+        document.getElementById('top-products-tbody').innerHTML = res.topProducts.map(p => `
+          <tr>
+            <td><strong>${p.name}</strong></td>
+            <td>${p.sold} sold</td>
+            <td>${formatPrice(p.finalPrice)}</td>
+          </tr>`).join('');
+
+        // Recent Orders Table
+        document.getElementById('recent-orders-tbody').innerHTML = res.recentOrders.map(o => `
+          <tr>
+            <td><strong style="color: var(--color-primary);">${o.orderNumber}</strong></td>
+            <td>${o.user?.name || 'Guest'}</td>
+            <td>${orderStatusBadge(o.status)}</td>
+          </tr>`).join('');
+      }
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  // Load Inventory Products list
+  async function loadProducts() {
+    try {
+      const res = await productAPI.getAll({ limit: 100 });
+      products = res.products || [];
+      
+      document.getElementById('admin-products-tbody').innerHTML = products.map(p => `
+        <tr id="row-prod-${p._id}">
+          <td><img class="tbl-img" src="${p.thumbnail || 'https://via.placeholder.com/40'}" alt=""></td>
+          <td><code>${p.sku || 'N/A'}</code></td>
+          <td><strong>${p.name}</strong></td>
+          <td>${formatPrice(p.finalPrice)}</td>
+          <td>${p.stock} units</td>
+          <td>
+            <button class="btn btn-secondary btn-sm edit-prod-btn" data-id="${p._id}">✏️ Edit</button>
+            <button class="btn btn-danger btn-sm delete-prod-btn" data-id="${p._id}">✕ Delete</button>
+          </td>
+        </tr>`).join('');
+
+      // Events
+      document.querySelectorAll('.edit-prod-btn').forEach(btn => {
+        btn.addEventListener('click', () => openProductModal(btn.dataset.id));
+      });
+      document.querySelectorAll('.delete-prod-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteProduct(btn.dataset.id));
+      });
+    } catch(e) {
+      toast.error('Failed to load products list');
+    }
+  }
+
+  // Load categories
+  async function loadCategories() {
+    try {
+      const res = await categoryAPI.getAll();
+      categories = res.categories || [];
+
+      // Populate Dropdowns in forms
+      const select = document.getElementById('form-p-category');
+      select.innerHTML = categories.map(c => `<option value="${c._id}">${c.name}</option>`).join('');
+
+      // Populate Category list table
+      document.getElementById('admin-categories-tbody').innerHTML = categories.map(c => `
+        <tr id="row-cat-${c._id}">
+          <td style="font-size: 1.5rem;">${c.icon || '📂'}</td>
+          <td><strong>${c.name}</strong></td>
+          <td><code>${c.slug}</code></td>
+          <td>${c.description || ''}</td>
+          <td>
+            <button class="btn btn-secondary btn-sm edit-cat-btn" data-id="${c._id}">✏️ Edit</button>
+            <button class="btn btn-danger btn-sm delete-cat-btn" data-id="${c._id}">✕ Delete</button>
+          </td>
+        </tr>`).join('');
+
+      // Events
+      document.querySelectorAll('.edit-cat-btn').forEach(btn => {
+        btn.addEventListener('click', () => openCategoryModal(btn.dataset.id));
+      });
+      document.querySelectorAll('.delete-cat-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteCategory(btn.dataset.id));
+      });
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  // Load orders
+  async function loadOrders() {
+    try {
+      const res = await orderAPI.getAll();
+      orders = res.orders || [];
+
+      document.getElementById('admin-orders-tbody').innerHTML = orders.map(o => `
+        <tr>
+          <td><strong style="color: var(--color-primary);">${o.orderNumber}</strong></td>
+          <td>${o.user?.name || 'Guest'}<br><span class="text-muted text-xs">${o.user?.email || ''}</span></td>
+          <td>${formatDate(o.createdAt)}</td>
+          <td>${orderStatusBadge(o.status)}</td>
+          <td><strong>${formatPrice(o.totalPrice)}</strong></td>
+          <td>
+            <button class="btn btn-secondary btn-sm manage-order-btn" data-id="${o._id}">⚙️ Manage</button>
+          </td>
+        </tr>`).join('');
+
+      document.querySelectorAll('.manage-order-btn').forEach(btn => {
+        btn.addEventListener('click', () => openOrderModal(btn.dataset.id));
+      });
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  // Load users
+  async function loadUsers() {
+    try {
+      const res = await adminAPI.getUsers();
+      users = res.users || [];
+
+      document.getElementById('admin-users-tbody').innerHTML = users.map(u => `
+        <tr>
+          <td><strong>${u.name}</strong></td>
+          <td>${u.email}</td>
+          <td><span class="badge ${u.role === 'admin' ? 'badge-purple' : 'badge-primary'}">${u.role.toUpperCase()}</span></td>
+          <td><span class="badge ${u.isActive ? 'badge-green' : 'badge-red'}">${u.isActive ? 'Active' : 'Suspended'}</span></td>
+          <td>
+            <button class="btn btn-secondary btn-sm toggle-role-btn" data-id="${u._id}" data-role="${u.role}">Toggle Role</button>
+            <button class="btn btn-danger btn-sm delete-user-btn" data-id="${u._id}" ${u.role==='admin'?'disabled':''}>Delete</button>
+          </td>
+        </tr>`).join('');
+
+      document.querySelectorAll('.toggle-role-btn').forEach(btn => {
+        btn.addEventListener('click', () => toggleUserRole(btn.dataset.id, btn.dataset.role));
+      });
+      document.querySelectorAll('.delete-user-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteUser(btn.dataset.id));
+      });
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  // User Actions
+  async function toggleUserRole(userId, curRole) {
+    const nextRole = curRole === 'admin' ? 'user' : 'admin';
+    try {
+      await adminAPI.updateUser(userId, { role: nextRole });
+      toast.success('User role updated!');
+      loadUsers();
+    } catch(e) { toast.error(e.message); }
+  }
+
+  async function deleteUser(userId) {
+    if (!confirm('Are you sure you want to delete this user account permanently?')) return;
+    try {
+      await adminAPI.deleteUser(userId);
+      toast.success('User account deleted');
+      loadUsers();
+    } catch(e) { toast.error(e.message); }
+  }
+
+  // Product Modals & CRUD operations
+  const pModal = document.getElementById('product-modal');
+  
+  document.getElementById('admin-add-product-btn').addEventListener('click', () => {
+    document.getElementById('product-form').reset();
+    document.getElementById('form-product-id').value = '';
+    document.getElementById('product-modal-title').textContent = 'Add New Product';
+    pModal.classList.add('open');
+  });
+
+  document.getElementById('close-product-modal').addEventListener('click', () => {
+    pModal.classList.remove('open');
+  });
+
+  async function openProductModal(productId) {
+    const p = products.find(prod => prod._id === productId);
+    if (!p) return;
+
+    document.getElementById('form-product-id').value = p._id;
+    document.getElementById('form-p-name').value = p.name;
+    document.getElementById('form-p-sku').value = p.sku || '';
+    document.getElementById('form-p-brand').value = p.brand || '';
+    document.getElementById('form-p-price').value = p.price;
+    document.getElementById('form-p-discount').value = p.discount || 0;
+    document.getElementById('form-p-stock').value = p.stock;
+    document.getElementById('form-p-category').value = p.category?._id || p.category || '';
+    document.getElementById('form-p-shortdesc').value = p.shortDesc || '';
+    document.getElementById('form-p-desc').value = p.description;
+    document.getElementById('form-p-thumb').value = p.thumbnail || '';
+    document.getElementById('form-p-features').value = JSON.stringify(p.features || []);
+    document.getElementById('form-p-tags').value = JSON.stringify(p.tags || []);
+    document.getElementById('form-p-featured').checked = !!p.isFeatured;
+
+    document.getElementById('product-modal-title').textContent = 'Edit Product';
+    pModal.classList.add('open');
+  }
+
+  document.getElementById('product-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('form-product-id').value;
+    const body = {
+      name: document.getElementById('form-p-name').value.trim(),
+      sku: document.getElementById('form-p-sku').value.trim(),
+      brand: document.getElementById('form-p-brand').value.trim(),
+      price: Number(document.getElementById('form-p-price').value),
+      discount: Number(document.getElementById('form-p-discount').value),
+      stock: Number(document.getElementById('form-p-stock').value),
+      category: document.getElementById('form-p-category').value,
+      shortDesc: document.getElementById('form-p-shortdesc').value.trim(),
+      description: document.getElementById('form-p-desc').value.trim(),
+      thumbnail: document.getElementById('form-p-thumb').value.trim(),
+      features: document.getElementById('form-p-features').value.trim() || '[]',
+      tags: document.getElementById('form-p-tags').value.trim() || '[]',
+      isFeatured: document.getElementById('form-p-featured').checked,
+      slug: document.getElementById('form-p-name').value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    };
+
+    // Include single-element image array
+    body.images = [body.thumbnail];
+
+    try {
+      if (id) {
+        // Edit update
+        await productAPI.update(id, body);
+        toast.success('Product updated!');
+      } else {
+        // Create new
+        await productAPI.create(body);
+        toast.success('New product created!');
+      }
+      pModal.classList.remove('open');
+      loadProducts();
+      loadAnalytics();
+    } catch(err) {
+      toast.error('Failed to save product: ' + err.message);
+    }
+  });
+
+  async function deleteProduct(productId) {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+    try {
+      await productAPI.delete(productId);
+      toast.success('Product deleted');
+      loadProducts();
+      loadAnalytics();
+    } catch(e) { toast.error(e.message); }
+  }
+
+  // Category Modals & CRUD
+  const cModal = document.getElementById('category-modal');
+
+  document.getElementById('admin-add-category-btn').addEventListener('click', () => {
+    document.getElementById('category-form').reset();
+    document.getElementById('form-cat-id').value = '';
+    document.getElementById('category-modal-title').textContent = 'Add New Category';
+    cModal.classList.add('open');
+  });
+
+  document.getElementById('close-category-modal').addEventListener('click', () => {
+    cModal.classList.remove('open');
+  });
+
+  // Autogenerate category slug
+  document.getElementById('form-c-name').addEventListener('input', (e) => {
+    const id = document.getElementById('form-cat-id').value;
+    if (!id) {
+      document.getElementById('form-c-slug').value = e.target.value
+        .trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    }
+  });
+
+  async function openCategoryModal(categoryId) {
+    const c = categories.find(cat => cat._id === categoryId);
+    if (!c) return;
+    document.getElementById('form-cat-id').value = c._id;
+    document.getElementById('form-c-name').value = c.name;
+    document.getElementById('form-c-slug').value = c.slug;
+    document.getElementById('form-c-icon').value = c.icon || '';
+    document.getElementById('form-c-desc').value = c.description || '';
+    document.getElementById('category-modal-title').textContent = 'Edit Category';
+    cModal.classList.add('open');
+  }
+
+  document.getElementById('category-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('form-cat-id').value;
+    const body = {
+      name: document.getElementById('form-c-name').value.trim(),
+      slug: document.getElementById('form-c-slug').value.trim(),
+      icon: document.getElementById('form-c-icon').value.trim(),
+      description: document.getElementById('form-c-desc').value.trim()
+    };
+
+    try {
+      if (id) {
+        await categoryAPI.update(id, body);
+        toast.success('Category updated!');
+      } else {
+        await categoryAPI.create(body);
+        toast.success('New category added!');
+      }
+      cModal.classList.remove('open');
+      loadCategories();
+    } catch(err) {
+      toast.error('Failed to save category: ' + err.message);
+    }
+  });
+
+  async function deleteCategory(categoryId) {
+    if (!confirm('Are you sure you want to delete this category?')) return;
+    try {
+      await categoryAPI.delete(categoryId);
+      toast.success('Category deleted');
+      loadCategories();
+    } catch(e) { toast.error(e.message); }
+  }
+
+  // Order Fulfillment management
+  const oModal = document.getElementById('order-modal');
+
+  document.getElementById('close-order-modal').addEventListener('click', () => {
+    oModal.classList.remove('open');
+  });
+
+  function openOrderModal(orderId) {
+    const o = orders.find(ord => ord._id === orderId);
+    if (!o) return;
+    document.getElementById('form-order-id').value = o._id;
+    document.getElementById('form-o-number').value = o.orderNumber;
+    document.getElementById('form-o-status').value = o.status;
+    document.getElementById('form-o-tracking').value = o.trackingNumber || '';
+    oModal.classList.add('open');
+  }
+
+  document.getElementById('order-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('form-order-id').value;
+    const status = document.getElementById('form-o-status').value;
+    const trackingNumber = document.getElementById('form-o-tracking').value.trim();
+
+    try {
+      await orderAPI.updateStatus(id, { status, trackingNumber });
+      toast.success('Order status updated!');
+      oModal.classList.remove('open');
+      loadOrders();
+      loadAnalytics();
+    } catch(err) {
+      toast.error(err.message);
+    }
+  });
+
+  initAdmin();
+</script>
+</body>
+</html>
