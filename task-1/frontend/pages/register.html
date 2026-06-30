@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register — LuxeStore</title>
   <meta name="description" content="Create a new LuxeStore account to manage your details, wishlist, and track orders.">
-  <link rel="stylesheet" href="/assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/global.css">
   <style>
     .auth-page { padding: calc(var(--nav-height) + 3rem) 0 4rem; display: flex; align-items: center; justify-content: center; }
     .auth-card {
@@ -53,7 +53,7 @@
 
       <div class="text-center text-sm text-secondary">
         Already have an account? 
-        <a href="/pages/login.html" class="text-primary-color font-medium">Log in instead</a>
+        <a href="../pages/login.html" class="text-primary-color font-medium">Log in instead</a>
       </div>
     </div>
   </div>
@@ -62,15 +62,15 @@
 <div id="toast-container"></div>
 
 <script type="module">
-  import { renderNavbar } from '/assets/js/navbar.js';
-  import { authAPI, setToken, setUser, isLoggedIn } from '/assets/js/api.js';
-  import { toast } from '/assets/js/utils.js';
+  import { renderNavbar } from '../assets/js/navbar.js';
+  import { authAPI, setToken, setUser, isLoggedIn } from '../assets/js/api.js';
+  import { toast } from '../assets/js/utils.js';
 
   renderNavbar();
 
   // If already logged in, redirect away
   if (isLoggedIn()) {
-    window.location.href = '/pages/dashboard.html';
+    window.location.href='../pages/dashboard.html';
   }
 
   document.getElementById('register-form').addEventListener('submit', async (e) => {
@@ -101,7 +101,7 @@
         setUser(res.user);
         toast.success('Registration successful! Welcome to LuxeStore.');
         setTimeout(() => {
-          window.location.href = '/pages/dashboard.html';
+          window.location.href='../pages/dashboard.html';
         }, 1200);
       }
     } catch(err) {

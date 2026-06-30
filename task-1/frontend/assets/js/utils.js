@@ -117,7 +117,7 @@ export function productCardHTML(product, wishlistIds = []) {
   return `
     <article class="product-card" data-id="${product._id}">
       <div class="product-card__image-wrap">
-        <a href="/pages/product.html?slug=${product.slug}">
+        <a href="..../pages/product.html?slug=${product.slug}">
           <img src="${product.thumbnail || 'https://via.placeholder.com/400x400/080F22/4F8EF7?text=No+Image'}"
                alt="${product.name}" loading="lazy">
         </a>
@@ -126,7 +126,7 @@ export function productCardHTML(product, wishlistIds = []) {
                   data-id="${product._id}" title="${inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}">
             ${inWishlist ? '❤️' : '🤍'}
           </button>
-          <a href="/pages/product.html?slug=${product.slug}"
+          <a href="..../pages/product.html?slug=${product.slug}"
              class="product-card__action-btn" title="View product">👁️</a>
         </div>
         ${discount ? `<div class="product-card__badge"><span class="badge badge-sale">-${product.discount}%</span></div>` : ''}
@@ -134,7 +134,7 @@ export function productCardHTML(product, wishlistIds = []) {
       <div class="product-card__body">
         ${catName ? `<span class="product-card__category">${catName}</span>` : ''}
         <h3 class="product-card__name">
-          <a href="/pages/product.html?slug=${product.slug}">${product.name}</a>
+          <a href="..../pages/product.html?slug=${product.slug}">${product.name}</a>
         </h3>
         <div class="product-card__rating">
           ${starsHTML(product.averageRating || 0)}

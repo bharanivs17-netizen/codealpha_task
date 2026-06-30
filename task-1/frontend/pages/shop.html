@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Shop — LuxeStore</title>
   <meta name="description" content="Browse our full collection of premium products. Filter by category, price, rating, and more.">
-  <link rel="stylesheet" href="/assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/global.css">
   <style>
     .shop-layout { display:grid; grid-template-columns:280px 1fr; gap:2rem; padding-top:calc(var(--nav-height)+2rem); padding-bottom:4rem; align-items:start; }
 
@@ -149,9 +149,9 @@
 <div id="toast-container"></div>
 
 <script type="module">
-  import { renderNavbar } from '/assets/js/navbar.js';
-  import { productAPI, categoryAPI, cartAPI, wishlistAPI, isLoggedIn } from '/assets/js/api.js';
-  import { toast, productCardHTML, showSkeletons, updateCartBadge, debounce } from '/assets/js/utils.js';
+  import { renderNavbar } from '../assets/js/navbar.js';
+  import { productAPI, categoryAPI, cartAPI, wishlistAPI, isLoggedIn } from '../assets/js/api.js';
+  import { toast, productCardHTML, showSkeletons, updateCartBadge, debounce } from '../assets/js/utils.js';
 
   renderNavbar();
 
@@ -305,7 +305,7 @@
   function attachCardEvents(container) {
     container.querySelectorAll('.add-to-cart-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
-        if (!isLoggedIn()) { toast.warning('Please login'); window.location.href='/pages/login.html'; return; }
+        if (!isLoggedIn()) { toast.warning('Please login'); window.location.href='../pages/login.html'; return; }
         btn.disabled = true;
         try {
           const { cart } = await cartAPI.add(btn.dataset.id, 1);

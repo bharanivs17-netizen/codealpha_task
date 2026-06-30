@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Categories — LuxeStore</title>
   <meta name="description" content="Browse all product categories at LuxeStore — Electronics, Fashion, Footwear, Audio, Wearables and more.">
-  <link rel="stylesheet" href="/assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/global.css">
   <style>
     .categories-hero {
       padding: calc(var(--nav-height) + 3rem) 0 3rem;
@@ -140,9 +140,9 @@
 <div id="toast-container"></div>
 
 <script type="module">
-  import { renderNavbar } from '/assets/js/navbar.js';
-  import { categoryAPI, productAPI } from '/assets/js/api.js';
-  import { initScrollReveal } from '/assets/js/utils.js';
+  import { renderNavbar } from '../assets/js/navbar.js';
+  import { categoryAPI, productAPI } from '../assets/js/api.js';
+  import { initScrollReveal } from '../assets/js/utils.js';
 
   renderNavbar();
 
@@ -165,7 +165,7 @@
 
       // Big featured cards (first 3)
       bigGrid.innerHTML = categories.slice(0,3).map((cat, i) => `
-        <a href="/pages/shop.html?category=${cat._id}" class="cat-big-card">
+        <a href="../pages/shop.html?category=${cat._id}" class="cat-big-card">
           <img class="cat-big-card__bg" src="${CAT_IMAGES[cat.slug] || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800'}" alt="${cat.name}" loading="lazy">
           <div class="cat-big-card__overlay"></div>
           <div class="cat-big-card__content">
@@ -178,7 +178,7 @@
 
       // Small cards (all categories)
       smallGrid.innerHTML = categories.map(cat => `
-        <a href="/pages/shop.html?category=${cat._id}" class="cat-small-card">
+        <a href="../pages/shop.html?category=${cat._id}" class="cat-small-card">
           <div class="cat-small-icon">${cat.icon || '📦'}</div>
           <div class="cat-small-name">${cat.name}</div>
           <div class="cat-small-desc">${cat.description}</div>

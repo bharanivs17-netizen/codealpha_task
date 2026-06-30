@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Shopping Cart — LuxeStore</title>
   <meta name="description" content="Review your cart and proceed to checkout at LuxeStore.">
-  <link rel="stylesheet" href="/assets/css/global.css">
+  <link rel="stylesheet" href="../assets/css/global.css">
   <style>
     .cart-page { padding:calc(var(--nav-height)+2rem) 0 4rem; }
     .cart-layout { display:grid; grid-template-columns:1fr 380px; gap:2rem; align-items:start; }
@@ -84,7 +84,7 @@
         <div class="empty-cart__icon">🛒</div>
         <h2 class="heading-2" style="margin-bottom:1rem;">Your cart is empty</h2>
         <p class="text-muted" style="margin-bottom:2rem;">Looks like you haven't added anything yet. Start shopping!</p>
-        <a href="/pages/shop.html" class="btn btn-primary btn-lg">Start Shopping</a>
+        <a href="../pages/shop.html" class="btn btn-primary btn-lg">Start Shopping</a>
       </div>
 
       <!-- Cart layout -->
@@ -127,10 +127,10 @@
             </div>
           </div>
 
-          <a href="/pages/checkout.html" class="btn btn-primary btn-lg btn-block" id="checkout-btn">
+          <a href="../pages/checkout.html" class="btn btn-primary btn-lg btn-block" id="checkout-btn">
             Proceed to Checkout →
           </a>
-          <a href="/pages/shop.html" class="btn btn-ghost btn-block mt-md" style="justify-content:center;">
+          <a href="../pages/shop.html" class="btn btn-ghost btn-block mt-md" style="justify-content:center;">
             ← Continue Shopping
           </a>
 
@@ -149,14 +149,14 @@
 <div id="toast-container"></div>
 
 <script type="module">
-  import { renderNavbar } from '/assets/js/navbar.js';
-  import { cartAPI, isLoggedIn } from '/assets/js/api.js';
-  import { toast, formatPrice, updateCartBadge } from '/assets/js/utils.js';
+  import { renderNavbar } from '../assets/js/navbar.js';
+  import { cartAPI, isLoggedIn } from '../assets/js/api.js';
+  import { toast, formatPrice, updateCartBadge } from '../assets/js/utils.js';
 
   renderNavbar();
 
   if (!isLoggedIn()) {
-    window.location.href = '/pages/login.html?redirect=/pages/cart.html';
+    window.location.href='../pages/login.html?redirect=/pages/cart.html';
   }
 
   let cartData = null;
@@ -193,13 +193,13 @@
       return `
         <div class="cart-item" data-id="${p?._id}">
           <div class="cart-item__img">
-            <a href="/pages/product.html?slug=${p?.slug}">
+            <a href="../pages/product.html?slug=${p?.slug}">
               <img src="${p?.thumbnail || 'https://via.placeholder.com/120x120/080F22/4F8EF7?text=?'}" alt="${p?.name}">
             </a>
           </div>
           <div>
             <div class="cart-item__cat">${p?.category?.name || ''}</div>
-            <div class="cart-item__name"><a href="/pages/product.html?slug=${p?.slug}">${p?.name || 'Product'}</a></div>
+            <div class="cart-item__name"><a href="../pages/product.html?slug=${p?.slug}">${p?.name || 'Product'}</a></div>
             <div class="cart-item__price">${formatPrice(item.price)} each</div>
             ${p?.stock < 5 ? `<span class="badge badge-gold" style="margin-top:.375rem;">Only ${p.stock} left</span>` : ''}
           </div>
